@@ -1,0 +1,8 @@
+FROM cyberprobe.debian.dev
+RUN mkdir -p /usr/local/src/cyberprobe
+WORKDIR /usr/local/src/cyberprobe
+RUN git clone http://git.code.sf.net/p/cyberprobe/code .
+RUN autoreconf -i
+RUN ./configure --prefix=/usr/local
+RUN make check
+RUN make -f pkg.mk deb
