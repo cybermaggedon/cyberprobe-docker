@@ -1,4 +1,4 @@
-FROM cyberprobe-debian-dev
+FROM cyberprobe-ubuntu-dev
 RUN mkdir -p /usr/local/src/cyberprobe
 WORKDIR /usr/local/src/cyberprobe
 RUN git clone http://git.code.sf.net/p/cyberprobe/code .

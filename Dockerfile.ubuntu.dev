@@ -1,0 +1,16 @@
+FROM ubuntu
+RUN apt update
+RUN apt-get install -y git
+RUN apt-get install -y autoconf automake
+RUN apt-get install -y libpcap-dev libboost-dev libboost-regex-dev
+RUN apt-get install -y g++
+RUN apt-get install -y libexpat-dev
+RUN apt-get install -y libncurses-dev libreadline-dev
+RUN apt-get install -y lua-filesystem lua-json lua-md5 lua-socket
+RUN apt-get install -y texinfo texlive
+RUN apt-get install -y python
+RUN apt-get install -y tcpdump
+RUN apt-get install -y libtool make
+RUN apt-get install -y build-essential devscripts apt-utils
+RUN apt-get install -y lua5.2 liblua5.2-dev
+RUN apt-get install -y dh-make

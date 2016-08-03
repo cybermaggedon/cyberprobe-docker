@@ -1,0 +1,22 @@
+
+FROM fedora:24
+
+COPY product/fedora-cyberprobe-0.63-1.fc24.x86_64.rpm cyberprobe.rpm
+
+RUN dnf install -y cyberprobe.rpm
+RUN dnf install -y lua-socket lua-json
+RUN dnf install -y tar
+RUN dnf install -y luarocks
+RUN dnf install -y cppzmq-devel
+RUN dnf install -y gcc
+RUN dnf install -y lua-devel
+RUN dnf install -y findutils
+RUN dnf install -y net-tools
+RUN luarocks install lzmq
+RUN luarocks install uuid
+
+COPY cyberprobe.cfg /cyberprobe.cfg
+RUN cp /cyberprobe.cfg /etc/cyberprobe.cfg
+
+CMD cyberprobe /etc/cyberprobe.cfg
+
