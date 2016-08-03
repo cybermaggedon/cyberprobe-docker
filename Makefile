@@ -13,7 +13,7 @@ DEBIAN_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
 UBUNTU_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
-all: product debian fedora
+all: product debian fedora ubuntu deploy
 
 product:
 	mkdir product
