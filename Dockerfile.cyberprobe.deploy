@@ -1,7 +1,7 @@
 
 FROM fedora:24
 
-COPY product/fedora-cyberprobe-0.63-1.fc24.x86_64.rpm cyberprobe.rpm
+COPY product/fedora-cyberprobe-0.70-1.fc24.x86_64.rpm cyberprobe.rpm
 
 RUN dnf install -y cyberprobe.rpm
 RUN dnf install -y lua-socket lua-json

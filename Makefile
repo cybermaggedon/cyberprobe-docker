@@ -1,8 +1,7 @@
 
-VERSION=0.63
+VERSION=0.70
+GIT_VERSION=d96354a148bd0ab9207588c785afd85d735e96d3
 
-BUILD_ARGS =  --build-arg http_proxy=http://10.0.1.2:3128/
-BUILD_ARGS += --build-arg https_proxy=http://10.0.1.2:3128/
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc24.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc24.x86_64.rpm
@@ -22,6 +21,7 @@ debian:
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-debian-dev \
 		-f Dockerfile.debian.dev .
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-debian-build \
+		--build-arg GIT_VERSION=${GIT_VERSION} \
 		-f Dockerfile.debian.build .
 	id=$$(sudo docker run -d cyberprobe-debian-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
@@ -35,6 +35,7 @@ fedora:
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-fedora-dev \
 		-f Dockerfile.fedora.dev .
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-fedora-build \
+		--build-arg GIT_VERSION=${GIT_VERSION} \
 		-f Dockerfile.fedora.build .
 	id=$$(sudo docker run -d cyberprobe-fedora-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
@@ -48,6 +49,7 @@ ubuntu:
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-ubuntu-dev \
 		-f Dockerfile.ubuntu.dev .
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-ubuntu-build \
+		--build-arg GIT_VERSION=${GIT_VERSION} \
 		-f Dockerfile.ubuntu.build .
 	id=$$(sudo docker run -d cyberprobe-ubuntu-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
@@ -60,6 +62,8 @@ ubuntu:
 deploy:
 	sudo docker build ${BUILD_ARGS} -t cyberprobe \
 		-f Dockerfile.cyberprobe.deploy .
+	sudo docker tag cyberprobe docker.io/cybermaggedon/cyberprobe:${VERSION}
 	sudo docker build ${BUILD_ARGS} -t cybermon \
 		-f Dockerfile.cybermon.deploy .
+	sudo docker tag cybermon docker.io/cybermaggedon/cyberprobe:${VERSION}
 
