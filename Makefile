@@ -1,6 +1,6 @@
 
-VERSION=0.71
-GIT_VERSION=v0.71
+VERSION=0.72
+GIT_VERSION=v0.72
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc24.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc24.x86_64.rpm
@@ -11,7 +11,7 @@ DEBIAN_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
 UBUNTU_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
-all: product debian fedora ubuntu deploy
+all: product debian fedora ubuntu container
 
 product:
 	mkdir product
