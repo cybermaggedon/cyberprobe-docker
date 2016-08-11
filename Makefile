@@ -1,7 +1,6 @@
 
-VERSION=0.70
-GIT_VERSION=d96354a148bd0ab9207588c785afd85d735e96d3
-
+VERSION=0.71
+GIT_VERSION=v0.71
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc24.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc24.x86_64.rpm
@@ -59,11 +58,20 @@ ubuntu:
 	done; \
 	sudo docker rm -f $${id}
 
-deploy:
+container:
 	sudo docker build ${BUILD_ARGS} -t cyberprobe \
+		--build-arg VERSION=${VERSION} \
 		-f Dockerfile.cyberprobe.deploy .
 	sudo docker tag cyberprobe docker.io/cybermaggedon/cyberprobe:${VERSION}
+	sudo docker tag cyberprobe docker.io/cybermaggedon/cyberprobe:latest
 	sudo docker build ${BUILD_ARGS} -t cybermon \
+		--build-arg VERSION=${VERSION} \
 		-f Dockerfile.cybermon.deploy .
-	sudo docker tag cybermon docker.io/cybermaggedon/cyberprobe:${VERSION}
+	sudo docker tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
+	sudo docker tag cybermon docker.io/cybermaggedon/cybermon:latest
 
+push:
+	sudo docker push docker.io/cybermaggedon/cyberprobe:${VERSION}
+	sudo docker push docker.io/cybermaggedon/cybermon:${VERSION}
+	sudo docker push docker.io/cybermaggedon/cyberprobe:latest
+	sudo docker push docker.io/cybermaggedon/cybermon:latest
