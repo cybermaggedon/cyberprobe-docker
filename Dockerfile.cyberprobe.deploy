@@ -13,6 +13,9 @@ RUN dnf install -y findutils
 RUN dnf install -y net-tools
 RUN luarocks install lzmq
 RUN luarocks install uuid
+RUN dnf install -y python python-zmq python-requests python-httplib2
+RUN pip install --upgrade google-api-python-client
+RUN pip install cassandra-driver
 
 COPY product/fedora-cyberprobe-${VERSION}-1.fc24.x86_64.rpm cyberprobe.rpm
 RUN dnf install -y cyberprobe.rpm
