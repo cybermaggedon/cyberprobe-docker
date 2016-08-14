@@ -2,8 +2,7 @@ FROM cyberprobe-debian-dev
 ARG GIT_VERSION=HEAD
 RUN mkdir -p /usr/local/src/cyberprobe
 WORKDIR /usr/local/src/cyberprobe
-RUN git clone http://git.code.sf.net/p/cyberprobe/code .
-RUN git checkout ${GIT_VERSION}
+RUN git clone http://git.code.sf.net/p/cyberprobe/code .; git checkout ${GIT_VERSION}
 RUN git status
 RUN autoreconf -i
 RUN ./configure --prefix=/usr/local

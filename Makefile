@@ -1,6 +1,6 @@
 
-VERSION=0.73
-GIT_VERSION=v0.73
+VERSION=0.74
+GIT_VERSION=v0.74
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc24.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc24.x86_64.rpm
@@ -43,6 +43,8 @@ fedora:
 		sudo docker cp $${id}:$${dir}/$${file} product/fedora-$${bn}; \
 	done; \
 	sudo docker rm -f $${id}
+	mv product/fedora-cyberprobe-${VERSION}.tar.gz product/cyberprobe-${VERSION}.tar.gz
+	mv product/fedora-cyberprobe-${VERSION}-1.fc24.src.rpm product/cyberprobe-${VERSION}.src.rpm
 
 ubuntu:
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-ubuntu-dev \
