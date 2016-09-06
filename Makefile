@@ -1,6 +1,6 @@
 
-VERSION=0.74
-GIT_VERSION=v0.74
+VERSION=0.75
+GIT_VERSION=e6b355d2979be2061a2b37ef535aa52260c5e148
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc24.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc24.x86_64.rpm
@@ -11,69 +11,72 @@ DEBIAN_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
 UBUNTU_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
+# Add sudo if you need to
+DOCKER=docker
+
 all: product debian fedora ubuntu container
 
 product:
 	mkdir product
 
 debian:
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-debian-dev \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-debian-dev \
 		-f Dockerfile.debian.dev .
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-debian-build \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-debian-build \
 		--build-arg GIT_VERSION=${GIT_VERSION} \
 		-f Dockerfile.debian.build .
-	id=$$(sudo docker run -d cyberprobe-debian-build sleep 180); \
+	id=$$(${DOCKER} run -d cyberprobe-debian-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
 	for file in ${DEBIAN_FILES}; do \
 		bn=$$(basename $$file); \
-		sudo docker cp $${id}:$${dir}/$${file} product/debian-$${bn}; \
+		${DOCKER} cp $${id}:$${dir}/$${file} product/debian-$${bn}; \
 	done; \
-	sudo docker rm -f $${id}
+	${DOCKER} rm -f $${id}
 
 fedora:
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-fedora-dev \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora-dev \
 		-f Dockerfile.fedora.dev .
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-fedora-build \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora-build \
 		--build-arg GIT_VERSION=${GIT_VERSION} \
 		-f Dockerfile.fedora.build .
-	id=$$(sudo docker run -d cyberprobe-fedora-build sleep 180); \
+	id=$$(${DOCKER} run -d cyberprobe-fedora-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
 	for file in ${FEDORA_FILES}; do \
 		bn=$$(basename $$file); \
-		sudo docker cp $${id}:$${dir}/$${file} product/fedora-$${bn}; \
+		${DOCKER} cp $${id}:$${dir}/$${file} product/fedora-$${bn}; \
 	done; \
-	sudo docker rm -f $${id}
+	${DOCKER} rm -f $${id}
 	mv product/fedora-cyberprobe-${VERSION}.tar.gz product/cyberprobe-${VERSION}.tar.gz
-	mv product/fedora-cyberprobe-${VERSION}-1.fc24.src.rpm product/cyberprobe-${VERSION}.src.rpm
+	mv product/fedora-cyberprobe-${VERSION}-1.fc24.src.rpm product/cyberprobe-${VERSION}-1.src.rpm
 
 ubuntu:
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-ubuntu-dev \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-ubuntu-dev \
 		-f Dockerfile.ubuntu.dev .
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-ubuntu-build \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-ubuntu-build \
 		--build-arg GIT_VERSION=${GIT_VERSION} \
 		-f Dockerfile.ubuntu.build .
-	id=$$(sudo docker run -d cyberprobe-ubuntu-build sleep 180); \
+	id=$$(${DOCKER} run -d cyberprobe-ubuntu-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
 	for file in ${UBUNTU_FILES}; do \
 		bn=$$(basename $$file); \
-		sudo docker cp $${id}:$${dir}/$${file} product/ubuntu-$${bn}; \
+		${DOCKER} cp $${id}:$${dir}/$${file} product/ubuntu-$${bn}; \
 	done; \
-	sudo docker rm -f $${id}
+	${DOCKER} rm -f $${id}
 
 container:
-	sudo docker build ${BUILD_ARGS} -t cyberprobe \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe \
 		--build-arg VERSION=${VERSION} \
 		-f Dockerfile.cyberprobe.deploy .
-	sudo docker tag cyberprobe docker.io/cybermaggedon/cyberprobe:${VERSION}
-	sudo docker tag cyberprobe docker.io/cybermaggedon/cyberprobe:latest
-	sudo docker build ${BUILD_ARGS} -t cybermon \
+	${DOCKER} tag cyberprobe docker.io/cybermaggedon/cyberprobe:${VERSION}
+	${DOCKER} tag cyberprobe docker.io/cybermaggedon/cyberprobe:latest
+	${DOCKER} build ${BUILD_ARGS} -t cybermon \
 		--build-arg VERSION=${VERSION} \
 		-f Dockerfile.cybermon.deploy .
-	sudo docker tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
-	sudo docker tag cybermon docker.io/cybermaggedon/cybermon:latest
+	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
+	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
 
 push:
-	sudo docker push docker.io/cybermaggedon/cyberprobe:${VERSION}
-	sudo docker push docker.io/cybermaggedon/cybermon:${VERSION}
-	sudo docker push docker.io/cybermaggedon/cyberprobe:latest
-	sudo docker push docker.io/cybermaggedon/cybermon:latest
+	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
+	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
+	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
+	${DOCKER} push docker.io/cybermaggedon/cybermon:latest
