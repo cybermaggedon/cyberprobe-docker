@@ -1,11 +1,11 @@
 
-VERSION=0.76
-GIT_VERSION=v0.76
+VERSION=0.80
+GIT_VERSION=v0.80
 
-FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc24.x86_64.rpm
-FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc24.x86_64.rpm
+FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc25.x86_64.rpm
+FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc25.x86_64.rpm
 FEDORA_FILES += cyberprobe-${VERSION}.tar.gz
-FEDORA_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc24.src.rpm
+FEDORA_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc25.src.rpm
 
 DEBIAN_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
@@ -47,7 +47,7 @@ fedora:
 	done; \
 	${DOCKER} rm -f $${id}
 	mv product/fedora-cyberprobe-${VERSION}.tar.gz product/cyberprobe-${VERSION}.tar.gz
-	mv product/fedora-cyberprobe-${VERSION}-1.fc24.src.rpm product/cyberprobe-${VERSION}-1.src.rpm
+	mv product/fedora-cyberprobe-${VERSION}-1.fc25.src.rpm product/cyberprobe-${VERSION}-1.src.rpm
 
 ubuntu:
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-ubuntu-dev \

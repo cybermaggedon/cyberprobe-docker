@@ -1,5 +1,5 @@
 
-FROM fedora:24
+FROM fedora:25
 
 ARG VERSION=none
 
@@ -17,10 +17,10 @@ RUN dnf install -y python python-zmq python-requests python-httplib2
 RUN pip install --upgrade google-api-python-client
 RUN pip install cassandra-driver
 
-COPY product/fedora-cyberprobe-${VERSION}-1.fc24.x86_64.rpm cyberprobe.rpm
+COPY product/fedora-cyberprobe-${VERSION}-1.fc25.x86_64.rpm cyberprobe.rpm
 RUN dnf install -y cyberprobe.rpm
 
-CMD cybermon 9000 /etc/cyberprobe/zeromq.lua
+CMD cybermon -p 9000 -c /etc/cyberprobe/zeromq.lua
 
 # cybermon receiver port.
 EXPOSE 9000
