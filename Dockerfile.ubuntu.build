@@ -6,4 +6,4 @@ RUN git clone http://git.code.sf.net/p/cyberprobe/code .; git checkout ${GIT_VER
 RUN autoreconf -fi
 RUN ./configure --prefix=/usr/local
 RUN make check
-RUN make -f pkg.mk ubuntu
+RUN make -f pkg.mk deb
