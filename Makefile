@@ -11,10 +11,14 @@ DEBIAN_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
 UBUNTU_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
+CENTOS_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.el7.centos.x86_64.rpm
+CENTOS_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.el7.centos.x86_64.rpm
+CENTOS_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.el7.centos.src.rpm
+
 # Add sudo if you need to
 DOCKER=docker
 
-all: product debian fedora ubuntu container
+all: product debian fedora ubuntu centos container
 
 product:
 	mkdir product
@@ -80,3 +84,22 @@ push:
 	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
 	${DOCKER} push docker.io/cybermaggedon/cybermon:latest
+
+luarocks-2.4.2.tar.gz:
+	wget http://luarocks.org/releases/luarocks-2.4.2.tar.gz
+
+centos: luarocks-2.4.2.tar.gz
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-centos-dev \
+		-f Dockerfile.centos.dev .
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-centos-build \
+		--build-arg GIT_VERSION=${GIT_VERSION} \
+		-f Dockerfile.centos.build .
+	id=$$(${DOCKER} run -d cyberprobe-centos-build sleep 180); \
+	dir=/usr/local/src/cyberprobe; \
+	for file in ${CENTOS_FILES}; do \
+		bn=$$(basename $$file); \
+		${DOCKER} cp $${id}:$${dir}/$${file} product/centos-$${bn}; \
+	done; \
+	${DOCKER} rm -f $${id}
+#	mv product/fedora-cyberprobe-${VERSION}.tar.gz product/cyberprobe-${VERSION}.tar.gz
+#	mv product/fedora-cyberprobe-${VERSION}-1.fc25.src.rpm product/cyberprobe-${VERSION}-1.src.rpm

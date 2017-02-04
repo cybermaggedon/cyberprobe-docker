@@ -1,0 +1,24 @@
+FROM centos:centos7.3.1611
+RUN yum install -y git autoconf automake
+RUN yum install -y libpcap-devel boost-devel gcc-c++
+RUN yum install -y expat-devel lua-devel 
+RUN yum install -y ncurses-devel readline-devel
+RUN yum install -y tcpdump tar
+RUN yum install -y libtool make
+RUN yum install -y texinfo-tex
+RUN yum install -y rpm-build
+RUN yum install -y openssl-devel
+RUN yum install -y texinfo texlive
+RUN yum install -y python
+WORKDIR /usr/local/src
+ADD luarocks-2.4.2.tar.gz /usr/local/src/
+WORKDIR luarocks-2.4.2
+RUN ./configure
+RUN make build install
+RUN luarocks --tree=/usr install luajson
+RUN luarocks --tree=/usr install luafilesystem
+RUN luarocks --tree=/usr install lmd5
+RUN luarocks --tree=/usr install luasocket
+RUN mv /usr/lib/lua/5.1/* /usr/lib64/lua/5.1/
+#RUN yum install -y cppzmq-devel
+#RUN luarocks install lzmq
