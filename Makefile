@@ -11,7 +11,7 @@ DEBIAN_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
 UBUNTU_FILES = cyberprobe_${VERSION}-1_amd64.deb
 
-all: product debian fedora ubuntu container
+all: product debian fedora ubuntu centos container
 
 product:
 	mkdir product
@@ -41,6 +41,20 @@ fedora:
 	for file in ${FEDORA_FILES}; do \
 		bn=$$(basename $$file); \
 		sudo docker cp $${id}:$${dir}/$${file} product/fedora-$${bn}; \
+	done; \
+	sudo docker rm -f $${id}
+
+centos: luarocks-2.0.6.tar.gz
+	sudo docker build ${BUILD_ARGS} -t cyberprobe-centos-dev \
+		-f Dockerfile.centos.dev .
+	sudo docker build ${BUILD_ARGS} -t cyberprobe-centos-build \
+		--build-arg GIT_VERSION=${GIT_VERSION} \
+		-f Dockerfile.centos.build .
+	id=$$(sudo docker run -d cyberprobe-centos-build sleep 180); \
+	dir=/usr/local/src/cyberprobe; \
+	for file in ${CENTOS_FILES}; do \
+		bn=$$(basename $$file); \
+		sudo docker cp $${id}:$${dir}/$${file} product/centos-$${bn}; \
 	done; \
 	sudo docker rm -f $${id}
 
@@ -75,3 +89,6 @@ push:
 	sudo docker push docker.io/cybermaggedon/cybermon:${VERSION}
 	sudo docker push docker.io/cybermaggedon/cyberprobe:latest
 	sudo docker push docker.io/cybermaggedon/cybermon:latest
+
+luarocks-2.0.6.tar.gz:
+	wget http://luarocks.github.io/luarocks/releases/luarocks-2.0.6.tar.gz

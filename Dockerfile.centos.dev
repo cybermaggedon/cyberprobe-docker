@@ -1,0 +1,21 @@
+FROM centos:7
+RUN yum install -y git autoconf automake
+RUN yum install -y libpcap-devel boost-devel gcc-c++
+RUN yum install -y expat-devel lua-devel 
+RUN yum install -y ncurses-devel readline-devel
+RUN yum install -y libtool make
+RUN yum install -y zip unzip
+COPY luarocks-2.0.6.tar.gz /usr/local/src
+WORKDIR /usr/local/src
+RUN tar xfz luarocks-2.0.6.tar.gz
+RUN cd luarocks-2.0.6; ./configure --with-lua-include=/usr/include; make; make install
+RUN luarocks install luafilesystem
+RUN luarocks install lpeg
+RUN luarocks install luajson
+RUN luarocks install md5
+RUN luarocks install luasocket
+RUN yum install -y texinfo texlive
+RUN yum install -y python
+RUN yum install -y tcpdump tar
+RUN yum install -y texinfo-tex
+RUN yum install -y rpm-build

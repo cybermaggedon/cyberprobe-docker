@@ -1,0 +1,13 @@
+sudo: required
+
+language: cpp
+
+services:
+  - docker
+
+notifications:
+  slack: galatea-team:tTUVQsUO7aK0N6LoYTtdV8zl
+
+script:
+  - make
+
