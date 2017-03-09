@@ -1,6 +1,6 @@
 
-VERSION=0.83
-GIT_VERSION=v0.83
+VERSION=f4ef65
+GIT_VERSION=f4ef65680349d03187726f8d9207832989ca7b0c
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc25.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc25.x86_64.rpm
@@ -53,20 +53,6 @@ fedora: product
 	mv product/fedora-cyberprobe-${VERSION}.tar.gz product/cyberprobe-${VERSION}.tar.gz
 	mv product/fedora-cyberprobe-${VERSION}-1.fc25.src.rpm product/cyberprobe-${VERSION}-1.src.rpm
 
-centos: product luarocks-2.4.2.tar.gz
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-centos-dev \
-		-f Dockerfile.centos.dev .
-	sudo docker build ${BUILD_ARGS} -t cyberprobe-centos-build \
-		--build-arg GIT_VERSION=${GIT_VERSION} \
-		-f Dockerfile.centos.build .
-	id=$$(sudo docker run -d cyberprobe-centos-build sleep 180); \
-	dir=/usr/local/src/cyberprobe; \
-	for file in ${CENTOS_FILES}; do \
-		bn=$$(basename $$file); \
-		sudo docker cp $${id}:$${dir}/$${file} product/centos-$${bn}; \
-	done; \
-	sudo docker rm -f $${id}
-
 ubuntu:
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-ubuntu-dev \
 		-f Dockerfile.ubuntu.dev .
@@ -102,7 +88,7 @@ push:
 luarocks-2.4.2.tar.gz:
 	wget http://luarocks.org/releases/luarocks-2.4.2.tar.gz
 
-centos: luarocks-2.4.2.tar.gz
+centos: product luarocks-2.4.2.tar.gz
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-centos-dev \
 		-f Dockerfile.centos.dev .
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-centos-build \
