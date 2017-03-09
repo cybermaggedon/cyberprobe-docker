@@ -1,4 +1,4 @@
-FROM fedora:24
+FROM fedora:25
 RUN dnf install -y git autoconf automake
 RUN dnf install -y libpcap-devel boost-devel gcc-c++
 RUN dnf install -y expat-devel lua-devel 
@@ -11,6 +11,7 @@ RUN dnf install -y tcpdump tar
 RUN dnf install -y libtool make
 RUN dnf install -y texinfo-tex
 RUN dnf install -y rpm-build
+RUN dnf install -y openssl-devel
 RUN luarocks install md5
 RUN dnf install -y cppzmq-devel
 RUN luarocks install lzmq
