@@ -8,10 +8,13 @@ services:
 notifications:
   slack: galatea-team:tTUVQsUO7aK0N6LoYTtdV8zl
 
+env:
+  - TARGET="fedora container"
+  - TARGET=debian
+  - TARGET=ubuntu
+  - TARGET=centos
+
 script:
-  - make fedora
-  - make debian
-  - make ubuntu
-  - make centos
-  - make container
+  - make $TARGET
+
 
