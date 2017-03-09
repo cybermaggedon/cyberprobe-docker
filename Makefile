@@ -23,7 +23,7 @@ all: product debian fedora ubuntu centos container
 product:
 	mkdir product
 
-debian:
+debian: product
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-debian-dev \
 		-f Dockerfile.debian.dev .
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-debian-build \
@@ -37,7 +37,7 @@ debian:
 	done; \
 	${DOCKER} rm -f $${id}
 
-fedora:
+fedora: product
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora-dev \
 		-f Dockerfile.fedora.dev .
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora-build \
@@ -53,7 +53,7 @@ fedora:
 	mv product/fedora-cyberprobe-${VERSION}.tar.gz product/cyberprobe-${VERSION}.tar.gz
 	mv product/fedora-cyberprobe-${VERSION}-1.fc25.src.rpm product/cyberprobe-${VERSION}-1.src.rpm
 
-centos: luarocks-2.0.6.tar.gz
+centos: product luarocks-2.4.2.tar.gz
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-centos-dev \
 		-f Dockerfile.centos.dev .
 	sudo docker build ${BUILD_ARGS} -t cyberprobe-centos-build \

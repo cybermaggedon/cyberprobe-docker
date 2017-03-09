@@ -9,5 +9,9 @@ notifications:
   slack: galatea-team:tTUVQsUO7aK0N6LoYTtdV8zl
 
 script:
-  - make
+  - make fedora
+  - make debian
+  - make ubuntu
+  - make centos
+  - make container
 
