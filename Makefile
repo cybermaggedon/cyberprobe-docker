@@ -1,6 +1,6 @@
 
-VERSION=0.97
-GIT_VERSION=eec5bd15eacd763e94e0e7b0759b70c9b0ed9bfa
+VERSION=1.0
+GIT_VERSION=v1.0
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc25.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc25.x86_64.rpm
