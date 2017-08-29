@@ -1,6 +1,6 @@
 
-VERSION=1.2
-GIT_VERSION=v1.2
+VERSION=1.3
+GIT_VERSION=v1.3
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc25.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc25.x86_64.rpm
@@ -18,9 +18,10 @@ CENTOS_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.el7.centos.src.rpm
 # Add sudo if you need to
 DOCKER=docker
 
-all: product debian fedora ubuntu centos container
+all: reset debian fedora ubuntu centos container
 
-product:
+reset:
+	rm -rf product
 	mkdir product
 
 debian: product
@@ -79,12 +80,6 @@ container:
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
 
-push:
-	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
-	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
-	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
-	${DOCKER} push docker.io/cybermaggedon/cybermon:latest
-
 luarocks-2.4.2.tar.gz:
 	wget http://luarocks.org/releases/luarocks-2.4.2.tar.gz
 
@@ -101,4 +96,34 @@ centos: product luarocks-2.4.2.tar.gz
 		${DOCKER} cp $${id}:$${dir}/$${file} product/centos-$${bn}; \
 	done; \
 	${DOCKER} rm -f $${id}
+
+push:
+	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
+	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
+	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
+	${DOCKER} push docker.io/cybermaggedon/cybermon:latest
+
+go:
+	GOPATH=$$(pwd)/go go get github.com/aktau/github-release
+
+TOKEN_FILE=TOKEN
+
+create-release: go
+	go/bin/github-release release \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name "Version ${VERSION}" \
+	  --description "" \
+	  -s $$(cat ${TOKEN_FILE})
+	for file in product/*${VERSION}*; do \
+	name=$$(basename $$file); \
+	go/bin/github-release upload \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name $$name \
+	  --file $$file \
+	  -s $$(cat ${TOKEN_FILE}); \
+	done
 
