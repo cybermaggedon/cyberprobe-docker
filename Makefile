@@ -24,6 +24,9 @@ reset:
 	rm -rf product
 	mkdir product
 
+product:
+	mkdir product
+
 debian: product
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-debian-dev \
 		-f Dockerfile.debian.dev .
