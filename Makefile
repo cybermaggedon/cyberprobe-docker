@@ -1,6 +1,6 @@
 
-VERSION=1.3
-GIT_VERSION=v1.3
+VERSION=1.5.1
+GIT_VERSION=v1.5.1
 
 FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc25.x86_64.rpm
 FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc25.x86_64.rpm
@@ -17,6 +17,10 @@ CENTOS_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.el7.centos.src.rpm
 
 # Add sudo if you need to
 DOCKER=docker
+
+# Allows the release process to read from a different directory i.e.
+# this macro can be over-ridden by the caller.
+PRODUCT_DIR=product
 
 all: reset debian fedora ubuntu centos container
 
@@ -83,6 +87,31 @@ container:
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
 
+container-images: images/cyberprobe.img images/cybermon.img
+
+push-images:
+	${DOCKER} load -i cyberprobe.img
+	${DOCKER} load -i cybermon.img
+	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
+	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
+	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
+	${DOCKER} push docker.io/cybermaggedon/cybermon:latest
+
+images/cyberprobe.img: ALWAYS images
+	${DOCKER} save -o $@ \
+		docker.io/cybermaggedon/cyberprobe:${VERSION} \
+		docker.io/cybermaggedon/cyberprobe:latest
+
+images/cybermon.img: ALWAYS images
+	${DOCKER} save -o $@ \
+		docker.io/cybermaggedon/cybermon:${VERSION} \
+		docker.io/cybermaggedon/cybermon:latest
+
+images:
+	mkdir images
+
+ALWAYS:
+
 luarocks-2.4.2.tar.gz:
 	wget http://luarocks.org/releases/luarocks-2.4.2.tar.gz
 
@@ -119,7 +148,7 @@ create-release: go
 	  --name "Version ${VERSION}" \
 	  --description "" \
 	  -s $$(cat ${TOKEN_FILE})
-	for file in product/*${VERSION}*; do \
+	for file in ${PRODUCT_DIR}/*${VERSION}*; do \
 	name=$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
