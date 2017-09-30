@@ -21,6 +21,7 @@ DOCKER=docker
 # Allows the release process to read from a different directory i.e.
 # this macro can be over-ridden by the caller.
 PRODUCT_DIR=product
+IMAGE_DIR=images
 
 all: reset debian fedora ubuntu centos container
 
@@ -90,8 +91,8 @@ container:
 container-images: images/cyberprobe.img images/cybermon.img
 
 push-images:
-	${DOCKER} load -i cyberprobe.img
-	${DOCKER} load -i cybermon.img
+	${DOCKER} load -i ${IMAGE_DIR}/cyberprobe.img
+	${DOCKER} load -i ${IMAGE_DIR}/cybermon.img
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
