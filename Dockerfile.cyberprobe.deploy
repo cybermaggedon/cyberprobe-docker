@@ -3,24 +3,15 @@ FROM fedora:25
 
 ARG VERSION=none
 
-RUN dnf install -y lua-socket lua-json
-RUN dnf install -y tar
-RUN dnf install -y luarocks
-RUN dnf install -y cppzmq-devel
-RUN dnf install -y gcc
-RUN dnf install -y lua-devel
-RUN dnf install -y findutils
-RUN dnf install -y net-tools
-RUN luarocks install lzmq
-RUN luarocks install uuid
-RUN dnf install -y python python-zmq python-requests python-httplib2
-RUN pip install --upgrade google-api-python-client
-RUN pip install cassandra-driver
-RUN luarocks install redis-lua
-RUN luarocks install uuid
+RUN dnf -y update && dnf install -y lua-socket lua-json tar luarocks \
+    cppzmq-devel gcc lua-devel findutils net-tools python python-zmq \
+    python-requests python-httplib2 && dnf clean all
+RUN luarocks install lzmq && luarocks install uuid && \
+    luarocks install redis-lua && luarocks install uuid
+RUN pip install --upgrade google-api-python-client cassandra-driver
 
 COPY product/fedora-cyberprobe-${VERSION}-1.fc25.x86_64.rpm cyberprobe.rpm
-RUN dnf install -y cyberprobe.rpm
+RUN dnf install -y cyberprobe.rpm && dnf clean all
 
 COPY cyberprobe.cfg /cyberprobe.cfg
 RUN cp /cyberprobe.cfg /etc/cyberprobe.cfg

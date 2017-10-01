@@ -88,11 +88,10 @@ container:
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
 
-container-images: images/cyberprobe.img images/cybermon.img
+container-images: images/cyberprobe.img
 
 push-images:
 	${DOCKER} load -i ${IMAGE_DIR}/cyberprobe.img
-	${DOCKER} load -i ${IMAGE_DIR}/cybermon.img
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
@@ -101,10 +100,7 @@ push-images:
 images/cyberprobe.img: ALWAYS images
 	${DOCKER} save -o $@ \
 		docker.io/cybermaggedon/cyberprobe:${VERSION} \
-		docker.io/cybermaggedon/cyberprobe:latest
-
-images/cybermon.img: ALWAYS images
-	${DOCKER} save -o $@ \
+		docker.io/cybermaggedon/cyberprobe:latest \
 		docker.io/cybermaggedon/cybermon:${VERSION} \
 		docker.io/cybermaggedon/cybermon:latest
 
