@@ -5,9 +5,6 @@ language: cpp
 services:
   - docker
 
-notifications:
-  slack: galatea-team:tTUVQsUO7aK0N6LoYTtdV8zl
-
 env:
   - TARGET="fedora container"
   - TARGET=debian
