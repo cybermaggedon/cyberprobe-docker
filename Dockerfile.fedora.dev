@@ -1,4 +1,4 @@
-FROM fedora:25
+FROM fedora:26
 RUN dnf install -y git autoconf automake
 RUN dnf install -y libpcap-devel boost-devel gcc-c++
 RUN dnf install -y expat-devel lua-devel 
