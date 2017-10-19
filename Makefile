@@ -156,3 +156,23 @@ create-release: go
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
 
+# Continuous deployment support
+BRANCH=master
+PREFIX=resources/probe-svc
+FILE=${PREFIX}/ksonnet/version.jsonnet
+REPO=git@github.com:cybermaggedon/cyberprobe-docker
+
+tools: phony
+	if [ ! -d tools ]; then \
+		git clone git@github.com:trustnetworks/cd-tools tools; \
+	fi; \
+	(cd tools; git pull)
+
+phony:
+
+bump-version: tools
+	tools/bump-version
+
+update-cluster-config: tools
+	tools/update-version-config ${BRANCH} ${VERSION} ${FILE}
+
