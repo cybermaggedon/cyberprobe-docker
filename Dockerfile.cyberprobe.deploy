@@ -7,7 +7,8 @@ RUN dnf -y update && dnf install -y lua-socket lua-json tar luarocks \
     cppzmq-devel gcc lua-devel findutils net-tools python python-zmq \
     python-requests python-httplib2 && dnf clean all
 RUN luarocks install lzmq && luarocks install uuid && \
-    luarocks install redis-lua && luarocks install uuid sha1
+    luarocks install redis-lua && luarocks install uuid  && \
+    luarocks install sha1
 RUN pip install --upgrade google-api-python-client cassandra-driver
 
 COPY product/fedora-cyberprobe-${VERSION}-1.fc26.x86_64.rpm cyberprobe.rpm
