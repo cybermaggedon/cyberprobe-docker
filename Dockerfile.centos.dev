@@ -19,6 +19,7 @@ RUN luarocks --tree=/usr install luajson
 RUN luarocks --tree=/usr install luafilesystem
 RUN luarocks --tree=/usr install lmd5
 RUN luarocks --tree=/usr install luasocket
+RUN luarocks --tree=/usr install sha1
 RUN mv /usr/lib/lua/5.1/* /usr/lib64/lua/5.1/
 #RUN yum install -y cppzmq-devel
 #RUN luarocks install lzmq

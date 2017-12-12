@@ -17,3 +17,4 @@ RUN dnf install -y cppzmq-devel
 RUN luarocks install lzmq
 RUN luarocks install redis-lua
 RUN luarocks install uuid
+RUN luarocks install sha1

@@ -22,4 +22,5 @@ RUN tar xfz luarocks-2.4.2.tar.gz
 RUN (cd luarocks-2.4.2; ./configure --with-lua-include=/usr/include)
 RUN (cd luarocks-2.4.2; make build; make install)
 RUN /usr/local/bin/luarocks --tree=/usr install uuid
+RUN /usr/local/bin/luarocks --tree=/usr install sha1
 WORKDIR /
