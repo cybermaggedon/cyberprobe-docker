@@ -1,5 +1,5 @@
 
-FROM fedora:26
+FROM fedora:27
 
 ARG VERSION=none
 
@@ -11,7 +11,7 @@ RUN luarocks install lzmq && luarocks install uuid && \
     luarocks install sha1
 RUN pip install --upgrade google-api-python-client cassandra-driver
 
-COPY product/fedora-cyberprobe-${VERSION}-1.fc26.x86_64.rpm cyberprobe.rpm
+COPY product/fedora-cyberprobe-${VERSION}-1.fc27.x86_64.rpm cyberprobe.rpm
 RUN dnf install -y cyberprobe.rpm && dnf clean all
 
 CMD cybermon -p 9000 -c /etc/cyberprobe/zeromq.lua

@@ -1,18 +1,17 @@
-FROM fedora:26
+FROM fedora:27
 RUN dnf install -y git autoconf automake
+RUN dnf install -y texinfo-tex
 RUN dnf install -y libpcap-devel boost-devel gcc-c++
 RUN dnf install -y expat-devel lua-devel 
 RUN dnf install -y ncurses-devel readline-devel 
-RUN dnf install -y lua-filesystem lua-json lua-md5 lua-socket
+RUN dnf install -y lua-json lua-socket
 RUN dnf install -y texinfo texlive
 RUN dnf install -y luarocks
 RUN dnf install -y python
 RUN dnf install -y tcpdump tar
 RUN dnf install -y libtool make
-RUN dnf install -y texinfo-tex
 RUN dnf install -y rpm-build
 RUN dnf install -y openssl-devel
-RUN luarocks install md5
 RUN dnf install -y cppzmq-devel
 RUN luarocks install lzmq
 RUN luarocks install redis-lua
