@@ -3,9 +3,11 @@ FROM fedora:27
 
 ARG VERSION=none
 
-RUN dnf -y update && dnf install -y lua-socket lua-json tar luarocks \
+RUN dnf -y update && \
+    dnf install -y lua-socket lua-json tar luarocks \
     cppzmq-devel gcc lua-devel findutils net-tools python python-zmq \
-    python-requests python-httplib2 && dnf clean all
+    python-requests python-httplib2 GeoIP python2-GeoIP geoipupdate && \
+    dnf clean all
 RUN luarocks install lzmq && luarocks install uuid && \
     luarocks install redis-lua && luarocks install uuid && \
     luarocks install sha1
