@@ -145,6 +145,8 @@ create-release: go
 	  --name "Version ${VERSION}" \
 	  --description "" \
 	  -s $$(cat ${TOKEN_FILE})
+
+upload-release: go
 	for file in ${PRODUCT_DIR}/*${VERSION}*; do \
 	name=$$(basename $$file); \
 	go/bin/github-release upload \
@@ -175,4 +177,5 @@ bump-version: tools
 
 update-cluster-config: tools
 	tools/update-version-config ${BRANCH} ${VERSION} ${FILE}
+	tools/update-version-config ${BRANCH} ${VERSION} resources/vpn-service/ksonnet/cyberprobe-version.jsonnet
 
