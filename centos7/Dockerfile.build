@@ -1,0 +1,4 @@
+FROM cyberprobe-centos7-dev
+ARG SRC_RPM
+COPY ${SRC_RPM} /
+RUN rpmbuild --rebuild *.src.rpm

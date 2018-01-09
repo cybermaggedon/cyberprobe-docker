@@ -1,79 +1,96 @@
 
-VERSION=1.7.0
-GIT_VERSION=c50ed919f6e194ea7342b978125408fc0c22cf57
+VERSION=1.8.2
+GIT_VERSION=v1.8.2
 
-FEDORA_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
-FEDORA_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc27.x86_64.rpm
-FEDORA_FILES += cyberprobe-${VERSION}.tar.gz
-FEDORA_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc27.src.rpm
+BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
+BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc27.x86_64.rpm
+BASE_FILES += cyberprobe-${VERSION}.tar.gz
+BASE_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc27.src.rpm
 
-DEBIAN_FILES = cyberprobe_${VERSION}-1_amd64.deb
-
-UBUNTU_FILES = cyberprobe_${VERSION}-1_amd64.deb
-
-CENTOS_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.el7.centos.x86_64.rpm
-CENTOS_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.el7.centos.x86_64.rpm
-CENTOS_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.el7.centos.src.rpm
+SRC_RPM = product/base/cyberprobe-${VERSION}-1.fc27.src.rpm
+SRC = product/base/cyberprobe-${VERSION}.tar.gz
 
 # Add sudo if you need to
 DOCKER=docker
 
 # Allows the release process to read from a different directory i.e.
 # this macro can be over-ridden by the caller.
-PRODUCT_DIR=product
+
 IMAGE_DIR=images
 
-all: reset debian fedora ubuntu centos container
+all:
+	make base
+	make rpm OS=f24
+	make rpm OS=f25
+	make rpm OS=f26
+	make rpm OS=f27
+	make deb OS=debian-jessie
+	make deb OS=debian-wheezy
+	make deb OS=debian-stretch
+	make deb OS=ubuntu-16.04
+	make deb OS=ubuntu-17.04
+	make deb OS=ubuntu-17.10
+	make deb OS=ubuntu-18.04
+	make deb OS=centos7
+	make container
 
-reset:
-	rm -rf product
-	mkdir product
+def: x.f1 x.f2 x.f3
 
-product:
-	mkdir product
+x.%: OS=$(@:x.%=%)
 
-debian: product
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-debian-dev \
-		-f Dockerfile.debian.dev .
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-debian-build \
+x.%:
+	echo build ${OS}
+
+#debian fedora ubuntu centos container
+
+# Base is a Fedora 27 build which produces source tar, source RPM,
+# and Fedora 27 RPMs for container builds.
+base: PRODUCT=product/base
+
+base:
+	rm -rf ${PRODUCT}
+	mkdir -p ${PRODUCT}
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora27-dev \
+		-f Dockerfile.fedora27.dev .
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora27-build \
 		--build-arg GIT_VERSION=${GIT_VERSION} \
-		-f Dockerfile.debian.build .
-	id=$$(${DOCKER} run -d cyberprobe-debian-build sleep 180); \
+		-f Dockerfile.fedora27.build .
+	id=$$(${DOCKER} run -d cyberprobe-fedora27-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
-	for file in ${DEBIAN_FILES}; do \
+	for file in ${BASE_FILES}; do \
 		bn=$$(basename $$file); \
-		${DOCKER} cp $${id}:$${dir}/$${file} product/debian-$${bn}; \
+		${DOCKER} cp $${id}:$${dir}/$${file} ${PRODUCT}/$${bn}; \
 	done; \
 	${DOCKER} rm -f $${id}
 
-fedora: product
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora-dev \
-		-f Dockerfile.fedora.dev .
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora-build \
-		--build-arg GIT_VERSION=${GIT_VERSION} \
-		-f Dockerfile.fedora.build .
-	id=$$(${DOCKER} run -d cyberprobe-fedora-build sleep 180); \
-	dir=/usr/local/src/cyberprobe; \
-	for file in ${FEDORA_FILES}; do \
-		bn=$$(basename $$file); \
-		${DOCKER} cp $${id}:$${dir}/$${file} product/fedora-$${bn}; \
-	done; \
-	${DOCKER} rm -f $${id}
-	mv product/fedora-cyberprobe-${VERSION}.tar.gz product/cyberprobe-${VERSION}.tar.gz
-	mv product/fedora-cyberprobe-${VERSION}-1.fc27.src.rpm product/cyberprobe-${VERSION}-1.src.rpm
+ARCH=x86_64
+rpm: PRODUCT=product/${OS}
 
-ubuntu:
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-ubuntu-dev \
-		-f Dockerfile.ubuntu.dev .
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-ubuntu-build \
-		--build-arg GIT_VERSION=${GIT_VERSION} \
-		-f Dockerfile.ubuntu.build .
-	id=$$(${DOCKER} run -d cyberprobe-ubuntu-build sleep 180); \
-	dir=/usr/local/src/cyberprobe; \
-	for file in ${UBUNTU_FILES}; do \
-		bn=$$(basename $$file); \
-		${DOCKER} cp $${id}:$${dir}/$${file} product/ubuntu-$${bn}; \
-	done; \
+rpm:
+	rm -rf ${PRODUCT}
+	mkdir -p ${PRODUCT}
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
+		-f ${OS}/Dockerfile.dev .
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-build \
+		--build-arg SRC_RPM=${SRC_RPM} \
+		-f ${OS}/Dockerfile.build .
+	id=$$(${DOCKER} run -d cyberprobe-${OS}-build sleep 180); \
+	${DOCKER} exec $${id} sh -c 'cd /root/rpmbuild/RPMS/${ARCH}; tar cfz - .' | (cd ${PRODUCT}; tar xvfz -); \
+	${DOCKER} rm -f $${id}
+
+deb: PRODUCT=product/${OS}
+
+deb:
+	rm -rf ${PRODUCT}
+	mkdir -p ${PRODUCT}
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
+		-f ${OS}/Dockerfile.dev .
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-build \
+		--build-arg SRC=${SRC} \
+		--build-arg VERSION=${VERSION} \
+		-f ${OS}/Dockerfile.build .
+	id=$$(${DOCKER} run -d cyberprobe-${OS}-build sleep 180); \
+	${DOCKER} exec $${id} sh -c 'tar cfz - *.deb' | (cd ${PRODUCT}; tar xvfz -); \
 	${DOCKER} rm -f $${id}
 
 container:
@@ -109,23 +126,6 @@ images:
 
 ALWAYS:
 
-luarocks-2.4.2.tar.gz:
-	wget http://luarocks.org/releases/luarocks-2.4.2.tar.gz
-
-centos: product luarocks-2.4.2.tar.gz
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-centos-dev \
-		-f Dockerfile.centos.dev .
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-centos-build \
-		--build-arg GIT_VERSION=${GIT_VERSION} \
-		-f Dockerfile.centos.build .
-	id=$$(${DOCKER} run -d cyberprobe-centos-build sleep 180); \
-	dir=/usr/local/src/cyberprobe; \
-	for file in ${CENTOS_FILES}; do \
-		bn=$$(basename $$file); \
-		${DOCKER} cp $${id}:$${dir}/$${file} product/centos-$${bn}; \
-	done; \
-	${DOCKER} rm -f $${id}
-
 push:
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
@@ -147,7 +147,7 @@ create-release: go
 	  -s $$(cat ${TOKEN_FILE})
 
 upload-release: go
-	for file in ${PRODUCT_DIR}/*${VERSION}*; do \
+	for file in ${PRODUCT}/*${VERSION}*; do \
 	name=$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
