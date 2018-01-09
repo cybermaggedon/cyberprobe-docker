@@ -1,4 +1,4 @@
-FROM cyberprobe-ubuntu-17.10-dev
+FROM cyberprobe-ubuntu-zesty-dev
 ARG SRC
 ARG VERSION
 ADD ${SRC} /usr/local/src/cyberprobe/

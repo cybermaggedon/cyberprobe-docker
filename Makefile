@@ -18,27 +18,12 @@ DOCKER=docker
 
 IMAGE_DIR=images
 
+# GPG user ID
+USERID=Trust Networks <cyberprobe@trustnetworks.com>
+
 all: base rpm.f24 rpm.f25 rpm.f26 rpm.f27 rpm.centos7 deb.debian-jessie \
-	deb.debian-wheezy deb.debian-stretch deb.ubuntu-16.04 \
-	deb.ubuntu-17.04 deb.ubuntu-17.10 deb.ubuntu-18.04 \
-	container
-
-#	make base
-#	make rpm OS=f24
-#	make rpm OS=f25
-#	make rpm OS=f26
-#	make rpm OS=f27
-#	make deb OS=debian-jessie
-#	make deb OS=debian-wheezy
-#	make deb OS=debian-stretch
-#	make deb OS=ubuntu-16.04
-#	make deb OS=ubuntu-17.04
-#	make deb OS=ubuntu-17.10
-#	make deb OS=ubuntu-18.04
-#	make deb OS=centos7
-#	make container
-
-#debian fedora ubuntu centos container
+	deb.debian-wheezy deb.debian-stretch deb.ubuntu-xenial \
+	deb.ubuntu-zesty deb.ubuntu-artful deb.ubuntu-bionic container
 
 # Base is a Fedora 27 build which produces source tar, source RPM,
 # and Fedora 27 RPMs for container builds.
@@ -62,7 +47,8 @@ base:
 
 ARCH=x86_64
 rpm.%: OS=$(@:rpm.%=%)
-rpm.%: PRODUCT=product/${OS}
+rpm.f%: PRODUCT=product/fedora/$(@:rpm.f%=%)/x86_64
+rpm.centos%: PRODUCT=product/centos/$(@:rpm.centos%=%)/x86_64
 
 rpm.%:
 	rm -rf ${PRODUCT}
@@ -75,9 +61,20 @@ rpm.%:
 	id=$$(${DOCKER} run -d cyberprobe-${OS}-build sleep 180); \
 	${DOCKER} exec $${id} sh -c 'cd /root/rpmbuild/RPMS/${ARCH}; tar cfz - .' | (cd ${PRODUCT}; tar xvfz -); \
 	${DOCKER} rm -f $${id}
+	for file in ${PRODUCT}/*.rpm; \
+	do \
+		rpm \
+		  -D '%_signature gpg' \
+		  -D '%_gpg_name ${USERID}' \
+		  -D "%_gpg_path $${HOME}/.gnupg" \
+		  -D '%_gpgbin /usr/bin/gpg2' \
+		  --resign $${file}; \
+	done
+	createrepo ${PRODUCT}
 
 deb.%: OS=$(@:deb.%=%)
-deb.%: PRODUCT=product/${OS}
+deb.debian-%: PRODUCT=product/debian/$(@:deb.debian-%=%)/binary-amd64
+deb.ubuntu-%: PRODUCT=product/ubuntu/$(@:deb.ubuntu-%=%)/binary-amd64
 
 deb.%: 
 	rm -rf ${PRODUCT}
@@ -91,15 +88,30 @@ deb.%:
 	id=$$(${DOCKER} run -d cyberprobe-${OS}-build sleep 180); \
 	${DOCKER} exec $${id} sh -c 'tar cfz - *.deb' | (cd ${PRODUCT}; tar xvfz -); \
 	${DOCKER} rm -f $${id}
+	cd ${PRODUCT}; \
+	for file in *.deb; \
+	do \
+	  echo $${file}; \
+	  mkdir tmp; \
+	  ( \
+	    cd tmp; ar x ../$${file}; \
+	    cat debian-binary control.* data.* > tempfile; \
+	    gpg2 -u '${USERID}' -abs -o _gpgorigin tempfile; \
+	    ar rc ../$${file} _gpgorigin debian-binary control.* data.*; \
+	  ); \
+	  rm -rf tmp; \
+	done
+
+PACKAGE=product/fedora/27/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
 
 container:
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe \
-		--build-arg VERSION=${VERSION} \
+		--build-arg PKG=${PACKAGE} \
 		-f Dockerfile.cyberprobe.deploy .
 	${DOCKER} tag cyberprobe docker.io/cybermaggedon/cyberprobe:${VERSION}
 	${DOCKER} tag cyberprobe docker.io/cybermaggedon/cyberprobe:latest
 	${DOCKER} build ${BUILD_ARGS} -t cybermon \
-		--build-arg VERSION=${VERSION} \
+		--build-arg PKG=${PACKAGE} \
 		-f Dockerfile.cybermon.deploy .
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
@@ -177,4 +189,18 @@ bump-version: tools
 update-cluster-config: tools
 	tools/update-version-config ${BRANCH} ${VERSION} ${FILE}
 	tools/update-version-config ${BRANCH} ${VERSION} resources/vpn-service/ksonnet/cyberprobe-version.jsonnet
+
+# GPG key admin
+
+delete-keys:
+	gpg2 --list-keys --with-colons | grep fpr | awk -F: '{print $$10}' | \
+	while read key; \
+	do \
+	  echo Delete $${key}; \
+	  gpg2 --batch --yes --delete-secret-and-public-keys "$${key}"; \
+	done
+
+generate-key:
+	gpg2 --yes --batch --passphrase '' \
+		--quick-generate-key '${USERID}' rsa4096 sign never
 
