@@ -14,7 +14,7 @@ RUN luarocks install lzmq && luarocks install uuid && \
 RUN pip install --upgrade google-api-python-client cassandra-driver
 RUN geoipupdate
 
-COPY product/base/cyberprobe-${VERSION}-1.fc27.x86_64.rpm cyberprobe.rpm
+COPY product/f27/cyberprobe-${VERSION}-1.fc27.x86_64.rpm cyberprobe.rpm
 RUN dnf install -y cyberprobe.rpm && dnf clean all
 
 CMD cybermon -p 9000 -c /etc/cyberprobe/zeromq.lua

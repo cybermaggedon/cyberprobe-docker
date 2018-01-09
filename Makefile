@@ -18,28 +18,25 @@ DOCKER=docker
 
 IMAGE_DIR=images
 
-all:
-	make base
-	make rpm OS=f24
-	make rpm OS=f25
-	make rpm OS=f26
-	make rpm OS=f27
-	make deb OS=debian-jessie
-	make deb OS=debian-wheezy
-	make deb OS=debian-stretch
-	make deb OS=ubuntu-16.04
-	make deb OS=ubuntu-17.04
-	make deb OS=ubuntu-17.10
-	make deb OS=ubuntu-18.04
-	make deb OS=centos7
-	make container
+all: base rpm.f24 rpm.f25 rpm.f26 rpm.f27 rpm.centos7 deb.debian-jessie \
+	deb.debian-wheezy deb.debian-stretch deb.ubuntu-16.04 \
+	deb.ubuntu-17.04 deb.ubuntu-17.10 deb.ubuntu-18.04 \
+	container
 
-def: x.f1 x.f2 x.f3
-
-x.%: OS=$(@:x.%=%)
-
-x.%:
-	echo build ${OS}
+#	make base
+#	make rpm OS=f24
+#	make rpm OS=f25
+#	make rpm OS=f26
+#	make rpm OS=f27
+#	make deb OS=debian-jessie
+#	make deb OS=debian-wheezy
+#	make deb OS=debian-stretch
+#	make deb OS=ubuntu-16.04
+#	make deb OS=ubuntu-17.04
+#	make deb OS=ubuntu-17.10
+#	make deb OS=ubuntu-18.04
+#	make deb OS=centos7
+#	make container
 
 #debian fedora ubuntu centos container
 
@@ -64,9 +61,10 @@ base:
 	${DOCKER} rm -f $${id}
 
 ARCH=x86_64
-rpm: PRODUCT=product/${OS}
+rpm.%: OS=$(@:rpm.%=%)
+rpm.%: PRODUCT=product/${OS}
 
-rpm:
+rpm.%:
 	rm -rf ${PRODUCT}
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
@@ -78,9 +76,10 @@ rpm:
 	${DOCKER} exec $${id} sh -c 'cd /root/rpmbuild/RPMS/${ARCH}; tar cfz - .' | (cd ${PRODUCT}; tar xvfz -); \
 	${DOCKER} rm -f $${id}
 
-deb: PRODUCT=product/${OS}
+deb.%: OS=$(@:deb.%=%)
+deb.%: PRODUCT=product/${OS}
 
-deb:
+deb.%: 
 	rm -rf ${PRODUCT}
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
