@@ -1,26 +1,43 @@
 
+#############################################################################
+# Input version numbers.  Normally over-ridden by GoCD.
+#############################################################################
 VERSION=1.8.2
 GIT_VERSION=v1.8.2
 
+#############################################################################
+# Global configuration
+#############################################################################
+
+# These files are part of the 'base' release, used only to extract
+# source bundle, and source RPM.
 BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
 BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc27.x86_64.rpm
 BASE_FILES += cyberprobe-${VERSION}.tar.gz
 BASE_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc27.src.rpm
 
+# Source bundle and RPM location.
 SRC_RPM = product/base/cyberprobe-${VERSION}-1.fc27.src.rpm
 SRC = product/base/cyberprobe-${VERSION}.tar.gz
 
 # Add sudo if you need to
 DOCKER=docker
 
-# Allows the release process to read from a different directory i.e.
+# Where container images are written
 # this macro can be over-ridden by the caller.
-
 IMAGE_DIR=images
 
 # GPG user ID
 USERID=Trust Networks <cyberprobe@trustnetworks.com>
 
+
+############################################################################
+# Global rules
+############################################################################
+
+# Typically, call: make download-product all upload-product
+
+# 'all' target builds everything.
 all: product/trust-networks.asc base \
 	rpm.f24 rpm.f25 rpm.f26 rpm.f27 rpm.centos7 \
 	deb.debian-jessie deb.debian-wheezy deb.debian-stretch \
@@ -28,22 +45,38 @@ all: product/trust-networks.asc base \
 	deb.ubuntu-bionic \
 	container
 
+# Downloads the bucket.  This is called before we add things to it.
 download-product:
 	mkdir -p product
 	gsutil rsync -r gs://download.trustnetworks.com/ product/
 
+# Uploads the bucket.
 upload-product:
 	gsutil -m rsync -r product/ gs://download.trustnetworks.com/
 	gsutil -m acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
 
+# Creates the public form of the signing key.
 product/trust-networks.asc:
 	mkdir -p product
 	gpg2 --armor --export > $@
 
+
+###########################################################################
+# Base product - this is called to create the source bundle and source RPM
+# which are used as input to all other builds.
+###########################################################################
+
 # Base is a Fedora 27 build which produces source tar, source RPM,
 # and Fedora 27 RPMs for container builds.
+
+# Base stuff is put in a base directory.
 base: PRODUCT=product/base
 
+# We use the 'build' model.  Two containers are created: a dev container
+# is created with the right build tools in it.  If everything goes wrong,
+# that gives developers a container to try things out manually to see what
+# went wrong.  The build container is created with the build in it.  The
+# build container can then be launched to extract the build products.
 base:
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora27-dev \
@@ -59,11 +92,27 @@ base:
 	done; \
 	${DOCKER} rm -f $${id}
 
+
+###########################################################################
+# RPM creation.
+###########################################################################
+
+# Targets are:
+#   rpm.f?? for Fedora.
+#   rpm.centos7 for CentOS.
+
+# Product paths.  This works for Fedora and CentOS.
 ARCH=x86_64
 rpm.%: OS=$(@:rpm.%=%)
 rpm.f%: PRODUCT=product/fedora/$(@:rpm.f%=%)/x86_64
 rpm.centos%: PRODUCT=product/centos/$(@:rpm.centos%=%)/x86_64
 
+# We use the 'build' model.  Two containers are created: a dev container
+# is created with the right build tools in it.  If everything goes wrong,
+# that gives developers a container to try things out manually to see what
+# went wrong.  The build container is created with the build in it.  The
+# build container can then be launched to extract the build products.
+# RPM files are signed using a GPG2 key, which must already exist.
 rpm.%:
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
@@ -85,14 +134,32 @@ rpm.%:
 	done
 	createrepo ${PRODUCT}
 
+
+###########################################################################
+# Deb package creation for Ubuntu and Debian.
+###########################################################################
+
+# Extracts operating system name.
 deb.%: OS=$(@:deb.%=%)
-deb.debian-%: RELATIVE=debian/$(@:deb.debian-%=%)/main/binary-amd64
-deb.ubuntu-%: RELATIVE=ubuntu/$(@:deb.ubuntu-%=%)/main/binary-amd64
-deb.debian-%: BASE=product
-deb.ubuntu-%: BASE=product
+
+# Relative pathname of package directory, inside repo.
+deb.debian-%: RELATIVE=dists/$(@:deb.debian-%=%)/main/binary-amd64
+deb.ubuntu-%: RELATIVE=dists/$(@:deb.ubuntu-%=%)/main/binary-amd64
+
+# Base repo name.
+deb.debian-%: BASE=product/debian
+deb.ubuntu-%: BASE=product/ubuntu
+
+# Repo pathname
 deb.debian-%: PRODUCT=${BASE}/${RELATIVE}
 deb.ubuntu-%: PRODUCT=${BASE}/${RELATIVE}
 
+# We use the 'build' model.  Two containers are created: a dev container
+# is created with the right build tools in it.  If everything goes wrong,
+# that gives developers a container to try things out manually to see what
+# went wrong.  The build container is created with the build in it.  The
+# build container can then be launched to extract the build products.
+# This creates a signed package.
 deb.%: 
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
@@ -121,8 +188,15 @@ deb.%:
 	cd ${BASE}; \
 	dpkg-scanpackages ${RELATIVE} > ${RELATIVE}/Packages
 
+
+###########################################################################
+# Container creation
+###########################################################################
+
+# Pathname to the package to install in containers.
 PACKAGE=product/fedora/27/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
 
+# Creates the containers.
 container:
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe \
 		--build-arg PKG=${PACKAGE} \
@@ -135,7 +209,22 @@ container:
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
 
+# Creates a Docker images tar file.
 container-images: images/cyberprobe.img
+
+images/cyberprobe.img: ALWAYS
+	mkdir -p images
+	${DOCKER} save -o $@ \
+		docker.io/cybermaggedon/cyberprobe:${VERSION} \
+		docker.io/cybermaggedon/cyberprobe:latest \
+		docker.io/cybermaggedon/cybermon:${VERSION} \
+		docker.io/cybermaggedon/cybermon:latest
+
+ALWAYS:
+
+# Pushes images to the container repository.  Docker hub authentication
+# must have been set up.
+push: push-images
 
 push-images:
 	${DOCKER} load -i ${IMAGE_DIR}/cyberprobe.img
@@ -144,29 +233,19 @@ push-images:
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
 	${DOCKER} push docker.io/cybermaggedon/cybermon:latest
 
-images/cyberprobe.img: ALWAYS images
-	${DOCKER} save -o $@ \
-		docker.io/cybermaggedon/cyberprobe:${VERSION} \
-		docker.io/cybermaggedon/cyberprobe:latest \
-		docker.io/cybermaggedon/cybermon:${VERSION} \
-		docker.io/cybermaggedon/cybermon:latest
 
-images:
-	mkdir images
+###########################################################################
+# Github release
+###########################################################################
 
-ALWAYS:
-
-push:
-	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
-	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
-	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
-	${DOCKER} push docker.io/cybermaggedon/cybermon:latest
-
+# Fetches Github release utility.
 go:
 	GOPATH=$$(pwd)/go go get github.com/aktau/github-release
 
+# Over-rideable location of the Github auth token file.
 TOKEN_FILE=TOKEN
 
+# Creates a Github release.  Must be used before upload-release.
 create-release: go
 	go/bin/github-release release \
 	  --user cybermaggedon \
@@ -176,9 +255,10 @@ create-release: go
 	  --description "" \
 	  -s $$(cat ${TOKEN_FILE})
 
+# Uploads 
 upload-release: go
-	for file in ${PRODUCT}/*${VERSION}*; do \
-	name=$$(basename $$file); \
+	for file in product/centos/7/x86_64/*${VERSION}*.rpm; do \
+	name=centos-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
 	  --repo cyberprobe \
@@ -187,6 +267,74 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
+	for file in product/fedora/27/x86_64/*${VERSION}*.rpm; do \
+	name=fedora-$$(basename $$file); \
+	go/bin/github-release upload \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name $$name \
+	  --file $$file \
+	  -s $$(cat ${TOKEN_FILE}); \
+	done
+	for file in product/debian/dists/jessie/main/binary-amd64/*${VERSION}*.deb; do \
+	name=debian-$$(basename $$file); \
+	go/bin/github-release upload \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name $$name \
+	  --file $$file \
+	  -s $$(cat ${TOKEN_FILE}); \
+	done
+	for file in product/ubuntu/dists/artful/main/binary-amd64/*${VERSION}*.deb; do \
+	name=ubuntu-$$(basename $$file); \
+	go/bin/github-release upload \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name $$name \
+	  --file $$file \
+	  -s $$(cat ${TOKEN_FILE}); \
+	done
+	go/bin/github-release upload \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name cyberprobe-${VERSION}-1.src.rpm \
+	  --file product/base/cyberprobe-${VERSION}-1.fc27.src.rpm \
+	  -s $$(cat ${TOKEN_FILE})
+	go/bin/github-release upload \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name cyberprobe-${VERSION}.tar.gz \
+	  --file product/base/cyberprobe-${VERSION}.tar.gz \
+	  -s $$(cat ${TOKEN_FILE})
+
+
+###########################################################################
+# GPG signing key management
+###########################################################################
+
+# Delete all GPG keys.
+delete-keys:
+	gpg2 --list-keys --with-colons | grep fpr | awk -F: '{print $$10}' | \
+	while read key; \
+	do \
+	  echo Delete $${key}; \
+	  gpg2 --batch --yes --delete-secret-and-public-keys "$${key}"; \
+	done
+
+# Create a new signing key.
+generate-key:
+	gpg2 --yes --batch --passphrase '' \
+		--quick-generate-key '${USERID}' rsa4096 sign never
+
+
+###########################################################################
+# Continuous deployment support.  Unlikely to be much use outside of TN.
+###########################################################################
 
 # Continuous deployment support
 BRANCH=master
@@ -207,19 +355,6 @@ bump-version: tools
 
 update-cluster-config: tools
 	tools/update-version-config ${BRANCH} ${VERSION} ${FILE}
-	tools/update-version-config ${BRANCH} ${VERSION} resources/vpn-service/ksonnet/cyberprobe-version.jsonnet
-
-# GPG key admin
-
-delete-keys:
-	gpg2 --list-keys --with-colons | grep fpr | awk -F: '{print $$10}' | \
-	while read key; \
-	do \
-	  echo Delete $${key}; \
-	  gpg2 --batch --yes --delete-secret-and-public-keys "$${key}"; \
-	done
-
-generate-key:
-	gpg2 --yes --batch --passphrase '' \
-		--quick-generate-key '${USERID}' rsa4096 sign never
+	tools/update-version-config ${BRANCH} ${VERSION} \
+		resources/vpn-service/ksonnet/cyberprobe-version.jsonnet
 
