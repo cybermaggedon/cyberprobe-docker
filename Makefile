@@ -21,16 +21,30 @@ IMAGE_DIR=images
 # GPG user ID
 USERID=Trust Networks <cyberprobe@trustnetworks.com>
 
-all: base rpm.f24 rpm.f25 rpm.f26 rpm.f27 rpm.centos7 deb.debian-jessie \
-	deb.debian-wheezy deb.debian-stretch deb.ubuntu-xenial \
-	deb.ubuntu-zesty deb.ubuntu-artful deb.ubuntu-bionic container
+all: product/trust-networks.asc base \
+	rpm.f24 rpm.f25 rpm.f26 rpm.f27 rpm.centos7 \
+	deb.debian-jessie deb.debian-wheezy deb.debian-stretch \
+	deb.ubuntu-xenial deb.ubuntu-zesty deb.ubuntu-artful \
+	deb.ubuntu-bionic \
+	container
+
+download-product:
+	mkdir -p product
+	gsutil rsync -r gs://download.trustnetworks.com/ product/
+
+upload-product:
+	gsutil -m rsync -r product/ gs://download.trustnetworks.com/
+	gsutil -m acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
+
+product/trust-networks.asc:
+	mkdir -p product
+	gpg2 --armor --export > $@
 
 # Base is a Fedora 27 build which produces source tar, source RPM,
 # and Fedora 27 RPMs for container builds.
 base: PRODUCT=product/base
 
 base:
-	rm -rf ${PRODUCT}
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora27-dev \
 		-f Dockerfile.fedora27.dev .
@@ -51,7 +65,6 @@ rpm.f%: PRODUCT=product/fedora/$(@:rpm.f%=%)/x86_64
 rpm.centos%: PRODUCT=product/centos/$(@:rpm.centos%=%)/x86_64
 
 rpm.%:
-	rm -rf ${PRODUCT}
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
 		-f ${OS}/Dockerfile.dev .
@@ -73,11 +86,14 @@ rpm.%:
 	createrepo ${PRODUCT}
 
 deb.%: OS=$(@:deb.%=%)
-deb.debian-%: PRODUCT=product/debian/$(@:deb.debian-%=%)/binary-amd64
-deb.ubuntu-%: PRODUCT=product/ubuntu/$(@:deb.ubuntu-%=%)/binary-amd64
+deb.debian-%: RELATIVE=debian/$(@:deb.debian-%=%)/main/binary-amd64
+deb.ubuntu-%: RELATIVE=ubuntu/$(@:deb.ubuntu-%=%)/main/binary-amd64
+deb.debian-%: BASE=product
+deb.ubuntu-%: BASE=product
+deb.debian-%: PRODUCT=${BASE}/${RELATIVE}
+deb.ubuntu-%: PRODUCT=${BASE}/${RELATIVE}
 
 deb.%: 
-	rm -rf ${PRODUCT}
 	mkdir -p ${PRODUCT}
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-${OS}-dev \
 		-f ${OS}/Dockerfile.dev .
@@ -92,6 +108,7 @@ deb.%:
 	for file in *.deb; \
 	do \
 	  echo $${file}; \
+	  rm -rf tmp; \
 	  mkdir tmp; \
 	  ( \
 	    cd tmp; ar x ../$${file}; \
@@ -101,6 +118,8 @@ deb.%:
 	  ); \
 	  rm -rf tmp; \
 	done
+	cd ${BASE}; \
+	dpkg-scanpackages ${RELATIVE} > ${RELATIVE}/Packages
 
 PACKAGE=product/fedora/27/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
 
