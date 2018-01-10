@@ -63,10 +63,10 @@ product/trust-networks.asc:
 	gpg2 --armor --export > $@
 
 # Shorthand, for existing GoCD pipelines
-fedora: rpm.f27
-centos: rpm.centos7
-debian: deb.debian-jessie
-ubuntu: deb.ubuntu-artful
+fedora: product/trust-networks.asc base rpm.f27
+centos: product/trust-networks.asc base rpm.centos7
+debian: product/trust-networks.asc base deb.debian-jessie
+ubuntu: product/trust-networks.asc base deb.ubuntu-artful
 
 ###########################################################################
 # Base product - this is called to create the source bundle and source RPM
