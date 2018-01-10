@@ -50,10 +50,12 @@ download-product:
 	mkdir -p product
 	gsutil rsync -r gs://download.trustnetworks.com/ product/
 
-# Uploads the bucket.
+# Uploads the bucket, makes it public, and puts 60s TTL cache age-off.
 upload-product:
 	gsutil -m rsync -r product/ gs://download.trustnetworks.com/
 	gsutil -m acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
+	gsutil -m setmeta -r -h "Cache-Control:public, max-age=60" \
+		'gs://download.trustnetworks.com/'
 
 # Creates the public form of the signing key.
 product/trust-networks.asc:
@@ -143,16 +145,24 @@ rpm.%:
 deb.%: OS=$(@:deb.%=%)
 
 # Relative pathname of package directory, inside repo.
-deb.debian-%: RELATIVE=dists/$(@:deb.debian-%=%)/main/binary-amd64
-deb.ubuntu-%: RELATIVE=dists/$(@:deb.ubuntu-%=%)/main/binary-amd64
+deb.debian-%: RELATIVE=main/binary-amd64
+deb.ubuntu-%: RELATIVE=main/binary-amd64
 
 # Base repo name.
 deb.debian-%: BASE=product/debian
 deb.ubuntu-%: BASE=product/ubuntu
 
+# Base repo name.
+deb.debian-%: DIST=dists/$(@:deb.debian-%=%)
+deb.ubuntu-%: DIST=dists/$(@:deb.ubuntu-%=%)
+
 # Repo pathname
-deb.debian-%: PRODUCT=${BASE}/${RELATIVE}
-deb.ubuntu-%: PRODUCT=${BASE}/${RELATIVE}
+deb.debian-%: PRODUCT=${BASE}/${DIST}/${RELATIVE}
+deb.ubuntu-%: PRODUCT=${BASE}/${DIST}/${RELATIVE}
+
+# Relative pathname of package directory, inside repo.
+deb.debian-%: DISTVSN=$(@:deb.debian-%=%)
+deb.ubuntu-%: DISTVSN=$(@:deb.ubuntu-%=%)
 
 # We use the 'build' model.  Two containers are created: a dev container
 # is created with the right build tools in it.  If everything goes wrong,
@@ -186,8 +196,36 @@ deb.%:
 	  rm -rf tmp; \
 	done
 	cd ${BASE}; \
-	dpkg-scanpackages ${RELATIVE} > ${RELATIVE}/Packages
-
+	dpkg-scanpackages ${DIST}/${RELATIVE} > ${DIST}/${RELATIVE}/Packages
+	cd ${BASE}/${DIST}; \
+	( \
+	  echo Date: $$(date +'%a, %d %b %Y %T %Z'); \
+	  echo Architectures: amd64; \
+	  echo Suite: ${DISTVSN}; \
+	  echo Codename: ${DISTVSN}; \
+	  echo Origin: Trust Networks; \
+	  echo Label: trust-networks; \
+	  echo Components: main; \
+	  echo Acquire-By-Hash: no; \
+	  echo Description: Trust Networks package repository; \
+	  md5=$$(md5sum main/binary-amd64/Packages | awk '{print $$1}'); \
+	  sha256=$$(sha256sum main/binary-amd64/Packages | awk '{print $$1}'); \
+	  sha1=$$(sha1sum main/binary-amd64/Packages | awk '{print $$1}'); \
+	  sha512=$$(sha512sum main/binary-amd64/Packages | awk '{print $$1}'); \
+	  file=main/binary-amd64/Packages; \
+	  size=$$(stat -c%s main/binary-amd64/Packages); \
+	  echo MD5Sum:; \
+	  echo "  $${md5} $${size} $${file} "; \
+	  echo SHA1:; \
+	  echo "  $${sha1} $${size} $${file} "; \
+	  echo 'SHA256:'; \
+	  echo "  $${sha256} $${size} $${file} "; \
+	  echo 'SHA512:'; \
+	  echo "  $${sha512} $${size} $${file} "; \
+	) > Release; \
+	rm -f InRelease; \
+	gpg2 -a -s --clearsign -u "${USERID}" -o InRelease Release; \
+	rm -f Release
 
 ###########################################################################
 # Container creation

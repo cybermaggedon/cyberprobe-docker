@@ -18,17 +18,25 @@ And then:
 
 ## Debian/Ubuntu
 
-For Stretch, append to end of /etc/apt/sources.list:
+Add our signing key...
 
-   deb http://download.trustnetworks.com/debian stretch main
+  wget -q -O- http://download.trustnetworks.com/trust-networks.asc | \
+    apt-key add -
+
+For Stretch:
+
+   echo 'deb http://download.trustnetworks.com/debian stretch main' \
+     >> /etc/apt/sources.list
 
 For Jessie:
 
-   deb http://download.trustnetworks.com/debian jessie main
+   echo 'deb http://download.trustnetworks.com/debian jessie main' \
+     >> /etc/apt/source.list
 
 For Wheezy:
 
-   deb http://download.trustnetworks.com/debian wheezy main
+   echo 'deb http://download.trustnetworks.com/debian wheezy main' \
+     >> /etc/apt/source.list
 
 And then:
 
