@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Normally over-ridden by GoCD.
 #############################################################################
-VERSION=1.8.2
-GIT_VERSION=v1.8.2
+VERSION=1.8.3
+GIT_VERSION=v1.8.3
 
 #############################################################################
 # Global configuration
@@ -48,7 +48,7 @@ all: product/trust-networks.asc base \
 # Downloads the bucket.  This is called before we add things to it.
 download-product:
 	mkdir -p product
-	gsutil rsync -r gs://download.trustnetworks.com/ product/
+	gsutil -m rsync -r gs://download.trustnetworks.com/ product/
 
 # Uploads the bucket, makes it public, and puts 60s TTL cache age-off.
 upload-product:
@@ -69,6 +69,7 @@ debian: product/trust-networks.asc base deb.debian-wheezy deb.debian-jessie \
 	deb.debian-stretch
 ubuntu: product/trust-networks.asc base deb.ubuntu-xenial deb.ubuntu-zesty \
 	deb.ubuntu-artful deb.ubuntu-bionic
+dag: product/trust-networks.asc base deb.ubuntu-zesty-dag
 
 ###########################################################################
 # Base product - this is called to create the source bundle and source RPM
