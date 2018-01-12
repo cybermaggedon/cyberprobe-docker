@@ -45,6 +45,9 @@ all: product/trust-networks.asc base \
 	deb.ubuntu-bionic \
 	container
 
+set-bucket-defacl:
+	gsutil defacl ch -u AllUsers:R gs://download.trustnetworks.com
+
 # Downloads the bucket.  This is called before we add things to it.
 download-product:
 	mkdir -p product
@@ -53,8 +56,8 @@ download-product:
 # Uploads the bucket, makes it public, and puts 60s TTL cache age-off.
 upload-product:
 	gsutil rsync -r product/ gs://download.trustnetworks.com/
-	gsutil acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
-	gsutil setmeta -r -h "Cache-Control:public, max-age=60" \
+# 	gsutil acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
+	-gsutil setmeta -r -h "Cache-Control:public, max-age=60" \
 		'gs://download.trustnetworks.com/'
 
 # Creates the public form of the signing key.
