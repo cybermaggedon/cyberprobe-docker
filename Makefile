@@ -48,13 +48,13 @@ all: product/trust-networks.asc base \
 # Downloads the bucket.  This is called before we add things to it.
 download-product:
 	mkdir -p product
-	gsutil -m rsync -r gs://download.trustnetworks.com/ product/
+	gsutil rsync -r gs://download.trustnetworks.com/ product/
 
 # Uploads the bucket, makes it public, and puts 60s TTL cache age-off.
 upload-product:
-	gsutil -m rsync -r product/ gs://download.trustnetworks.com/
-	gsutil -m acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
-	gsutil -m setmeta -r -h "Cache-Control:public, max-age=60" \
+	gsutil rsync -r product/ gs://download.trustnetworks.com/
+	gsutil acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
+	gsutil setmeta -r -h "Cache-Control:public, max-age=60" \
 		'gs://download.trustnetworks.com/'
 
 # Creates the public form of the signing key.
