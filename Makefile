@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Normally over-ridden by GoCD.
 #############################################################################
-VERSION=1.8.3
-GIT_VERSION=v1.8.3
+VERSION=1.8.6
+GIT_VERSION=daac89e03add82a319d5f839cf736e544fe70f34
 
 #############################################################################
 # Global configuration
@@ -51,7 +51,8 @@ set-bucket-defacl:
 # Downloads the bucket.  This is called before we add things to it.
 download-product:
 	mkdir -p product
-	gsutil rsync -r gs://download.trustnetworks.com/ product/
+	gsutil rsync -r gs://download.trustnetworks.com/${SUBDIR} \
+	  product/${SUBDIR}
 
 # Uploads the bucket, makes it public, and puts 60s TTL cache age-off.
 upload-product:
@@ -92,12 +93,12 @@ base: PRODUCT=product/base
 # build container can then be launched to extract the build products.
 base:
 	mkdir -p ${PRODUCT}
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora27-dev \
-		-f Dockerfile.fedora27.dev .
-	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-fedora27-build \
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-base-dev \
+		-f Dockerfile.base.dev .
+	${DOCKER} build ${BUILD_ARGS} -t cyberprobe-base-build \
 		--build-arg GIT_VERSION=${GIT_VERSION} \
-		-f Dockerfile.fedora27.build .
-	id=$$(${DOCKER} run -d cyberprobe-fedora27-build sleep 180); \
+		-f Dockerfile.base.build .
+	id=$$(${DOCKER} run -d cyberprobe-base-build sleep 180); \
 	dir=/usr/local/src/cyberprobe; \
 	for file in ${BASE_FILES}; do \
 		bn=$$(basename $$file); \
@@ -117,8 +118,8 @@ base:
 # Product paths.  This works for Fedora and CentOS.
 ARCH=x86_64
 rpm.%: OS=$(@:rpm.%=%)
-rpm.f%: PRODUCT=product/fedora/$(@:rpm.f%=%)/x86_64
-rpm.centos%: PRODUCT=product/centos/$(@:rpm.centos%=%)/x86_64
+rpm.f%: PRODUCT=product/fedora/$(@:rpm.f%=%)/${ARCH}
+rpm.centos%: PRODUCT=product/centos/$(@:rpm.centos%=%)/${ARCH}
 
 # We use the 'build' model.  Two containers are created: a dev container
 # is created with the right build tools in it.  If everything goes wrong,
@@ -145,8 +146,20 @@ rpm.%:
 		  -D '%_gpgbin /usr/bin/gpg2' \
 		  --resign $${file}; \
 	done
+	rm -rf ${PRODUCT}/repodata
 	createrepo ${PRODUCT}
 
+upload.rpm.f%: SUBDIR=fedora/$(@:upload.rpm.f%=%)/${ARCH}
+upload.rpm.centos%: SUBDIR=centos/$(@:upload.rpm.centos%=%)/${ARCH}
+
+upload.rpm.%:
+	rm -rf product/${SUBDIR}
+	mkdir -p product/${SUBDIR}
+	make $(@:upload.%=%)
+	gsutil rsync -d -r product/${SUBDIR} \
+		"gs://download.trustnetworks.com/${SUBDIR}"
+	gsutil setmeta -r -h "Cache-Control:public, max-age=300" \
+		"gs://download.trustnetworks.com/${SUBDIR}"
 
 ###########################################################################
 # Deb package creation for Ubuntu and Debian.
@@ -237,6 +250,19 @@ deb.%:
 	rm -f InRelease; \
 	gpg2 -a -s --clearsign -u "${USERID}" -o InRelease Release; \
 	rm -f Release
+
+upload.deb.debian-%: SUBDIR=debian/dists/$(@:upload.deb.debian-%=%)/main/binary-amd64
+upload.deb.ubuntu-%: SUBDIR=ubuntu/dists/$(@:upload.deb.ubuntu-%=%)/main/binary-amd64
+
+upload.deb.%:
+	rm -rf product/${SUBDIR}
+	mkdir -p product/${SUBDIR}
+	make $(@:upload.%=%)
+	asdgsutil rsync -d -r product/${SUBDIR} \
+		"gs://download.trustnetworks.com/${SUBDIR}"
+	asdgsutil setmeta -r -h "Cache-Control:public, max-age=300" \
+		"gs://download.trustnetworks.com/${SUBDIR}"
+
 
 ###########################################################################
 # Container creation

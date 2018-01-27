@@ -23,6 +23,11 @@ Add our signing key...
   wget -q -O- http://download.trustnetworks.com/trust-networks.asc | \
     apt-key add -
 
+Or simpler:
+
+   apt-key adv --fetch-keys \
+     http://download.trustnetworks.com/trust-networks.asc
+     
 For Stretch:
 
    echo 'deb http://download.trustnetworks.com/debian stretch main' \
