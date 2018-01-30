@@ -67,7 +67,6 @@ download-product:
 # Uploads the bucket, makes it public, and puts 60s TTL cache age-off.
 upload-product:
 	gsutil rsync -r product/ gs://download.trustnetworks.com/
-# 	gsutil acl -r ch -u AllUsers:R gs://download.trustnetworks.com/
 	-gsutil setmeta -r -h "Cache-Control:public, max-age=60" \
 		'gs://download.trustnetworks.com/'
 
@@ -159,7 +158,7 @@ upload.rpm.%:
 	make $(@:upload.%=%)
 	gsutil rsync -d -r product/${SUBDIR} \
 		"gs://download.trustnetworks.com/${SUBDIR}"
-	gsutil setmeta -r -h "Cache-Control:public, max-age=300" \
+	-gsutil setmeta -r -h "Cache-Control:public, max-age=300" \
 		"gs://download.trustnetworks.com/${SUBDIR}"
 
 ###########################################################################
@@ -263,7 +262,7 @@ upload.deb.%:
 	make $(@:upload.%=%)
 	gsutil rsync -d -r product/${ROOTDIR} \
 		"gs://download.trustnetworks.com/${ROOTDIR}"
-	gsutil setmeta -r -h "Cache-Control:public, max-age=300" \
+	-gsutil setmeta -r -h "Cache-Control:public, max-age=300" \
 		"gs://download.trustnetworks.com/${ROOTDIR}"
 
 
