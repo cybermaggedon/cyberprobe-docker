@@ -1,4 +1,6 @@
 FROM ubuntu:17.04
+RUN sed -i s/archive.ubuntu.com/old-releases.ubuntu.com/g /etc/apt/sources.list
+RUN sed -i s/security.ubuntu.com/old-releases.ubuntu.com/g /etc/apt/sources.list
 RUN apt update
 RUN apt-get install -y git
 RUN apt-get install -y texinfo texlive

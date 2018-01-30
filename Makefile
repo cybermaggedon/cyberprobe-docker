@@ -3,7 +3,7 @@
 # Input version numbers.  Normally over-ridden by GoCD.
 #############################################################################
 VERSION=1.8.6
-GIT_VERSION=daac89e03add82a319d5f839cf736e544fe70f34
+GIT_VERSION=v1.8.6
 
 #############################################################################
 # Global configuration
@@ -41,9 +41,19 @@ USERID=Trust Networks <cyberprobe@trustnetworks.com>
 all: product/trust-networks.asc base \
 	rpm.f24 rpm.f25 rpm.f26 rpm.f27 rpm.centos7 \
 	deb.debian-jessie deb.debian-wheezy deb.debian-stretch \
-	deb.ubuntu-xenial deb.ubuntu-zesty deb.ubuntu-artful \
-	deb.ubuntu-bionic \
-	container
+	deb.ubuntu-xenial deb.ubuntu-artful \
+	container container-images
+
+upload: upload.rpm.f24 upload.rpm.f25 upload.rpm.f26 upload.rpm.f27 \
+	upload.rpm.centos7 \
+	upload.deb.debian-jessie upload.deb.debian-wheezy \
+	upload.deb.debian-stretch \
+	upload.deb.ubuntu-xenial upload.deb.ubuntu-zesty \
+	upload.deb.ubuntu-artful \
+	container container-images create-release upload-release push
+
+dag: product/trust-networks.asc base deb.ubuntu-artful-dag deb.ubuntu-zesty-dag
+dag.upload: product/trust-networks.asc base upload.deb.ubuntu-artful-dag
 
 set-bucket-defacl:
 	gsutil defacl ch -u AllUsers:R gs://download.trustnetworks.com
@@ -65,15 +75,6 @@ upload-product:
 product/trust-networks.asc:
 	mkdir -p product
 	gpg2 --armor --export > $@
-
-# Shorthand, for existing GoCD pipelines
-fedora: product/trust-networks.asc base rpm.f24 rpm.f25 rpm.f26 rpm.f27
-centos: product/trust-networks.asc base rpm.centos7
-debian: product/trust-networks.asc base deb.debian-wheezy deb.debian-jessie \
-	deb.debian-stretch
-ubuntu: product/trust-networks.asc base deb.ubuntu-xenial deb.ubuntu-zesty \
-	deb.ubuntu-artful deb.ubuntu-bionic
-dag: product/trust-networks.asc base deb.ubuntu-zesty-dag
 
 ###########################################################################
 # Base product - this is called to create the source bundle and source RPM
@@ -253,15 +254,17 @@ deb.%:
 
 upload.deb.debian-%: SUBDIR=debian/dists/$(@:upload.deb.debian-%=%)/main/binary-amd64
 upload.deb.ubuntu-%: SUBDIR=ubuntu/dists/$(@:upload.deb.ubuntu-%=%)/main/binary-amd64
+upload.deb.debian-%: ROOTDIR=debian/dists/$(@:upload.deb.debian-%=%)/
+upload.deb.ubuntu-%: ROOTDIR=ubuntu/dists/$(@:upload.deb.ubuntu-%=%)/
 
 upload.deb.%:
 	rm -rf product/${SUBDIR}
 	mkdir -p product/${SUBDIR}
 	make $(@:upload.%=%)
-	asdgsutil rsync -d -r product/${SUBDIR} \
-		"gs://download.trustnetworks.com/${SUBDIR}"
-	asdgsutil setmeta -r -h "Cache-Control:public, max-age=300" \
-		"gs://download.trustnetworks.com/${SUBDIR}"
+	gsutil rsync -d -r product/${ROOTDIR} \
+		"gs://download.trustnetworks.com/${ROOTDIR}"
+	gsutil setmeta -r -h "Cache-Control:public, max-age=300" \
+		"gs://download.trustnetworks.com/${ROOTDIR}"
 
 
 ###########################################################################
