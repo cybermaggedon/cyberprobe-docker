@@ -301,6 +301,10 @@ local configMaps(config) = {
         ] else []
     
 };
-   
-[tls, open, ca, configMaps]
+
+local worker(config) = {
+	resources: tls(config).resources + open(config).resources
+				+ ca(config).resources + configMaps(config).resources
+};
+worker
 
