@@ -10,11 +10,12 @@ RUN yum install -y texinfo-tex
 RUN yum install -y rpm-build
 RUN yum install -y openssl-devel
 RUN yum install -y python
+RUN yum install -y wget
 WORKDIR /usr/local/src
-ADD luarocks-2.4.2.tar.gz /usr/local/src/
-WORKDIR luarocks-2.4.2
-RUN ./configure
-RUN make build install
+RUN wget http://luarocks.org/releases/luarocks-2.4.2.tar.gz
+RUN tar xfz luarocks-2.4.2.tar.gz
+RUN (cd luarocks-2.4.2; ./configure --with-lua-include=/usr/include)
+RUN (cd luarocks-2.4.2; make build; make install)
 RUN luarocks --tree=/usr install luajson
 RUN luarocks --tree=/usr install luasocket
 RUN luarocks --tree=/usr install sha1
@@ -22,3 +23,4 @@ RUN luarocks --tree=/usr install uuid
 RUN mv /usr/lib/lua/5.1/* /usr/lib64/lua/5.1/
 #RUN yum install -y cppzmq-devel
 #RUN luarocks install lzmq
+WORKDIR /

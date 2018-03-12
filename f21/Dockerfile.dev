@@ -1,0 +1,19 @@
+FROM fedora:21
+RUN yum install -y git autoconf automake
+RUN yum install -y texinfo-tex
+RUN yum install -y libpcap-devel boost-devel gcc-c++
+RUN yum install -y expat-devel lua-devel 
+RUN yum install -y ncurses-devel readline-devel 
+RUN yum install -y lua-json lua-socket
+RUN yum install -y texinfo texlive
+RUN yum install -y luarocks
+RUN yum install -y python
+RUN yum install -y tcpdump tar
+RUN yum install -y libtool make
+RUN yum install -y rpm-build
+RUN yum install -y openssl-devel
+RUN yum install -y cppzmq-devel
+RUN luarocks install lzmq
+RUN luarocks install redis-lua
+RUN luarocks install uuid
+RUN luarocks install sha1

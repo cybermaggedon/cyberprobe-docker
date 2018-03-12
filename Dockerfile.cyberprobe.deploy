@@ -1,7 +1,7 @@
 
 FROM fedora:27
 
-ARG VERSION=none
+ARG PKG
 
 RUN dnf -y update && \
     dnf install -y lua-socket lua-json tar luarocks \
@@ -13,7 +13,7 @@ RUN luarocks install lzmq && luarocks install uuid && \
     luarocks install sha1
 RUN pip install --upgrade google-api-python-client cassandra-driver
 
-COPY product/fedora-cyberprobe-${VERSION}-1.fc27.x86_64.rpm cyberprobe.rpm
+COPY ${PKG} cyberprobe.rpm
 RUN dnf install -y cyberprobe.rpm && dnf clean all
 
 COPY cyberprobe.cfg /cyberprobe.cfg

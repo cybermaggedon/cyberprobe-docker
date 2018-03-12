@@ -1,0 +1,26 @@
+FROM ubuntu:17.10
+RUN apt update
+RUN apt-get install -y git
+RUN apt-get install -y texinfo texlive
+RUN apt-get install -y autoconf automake
+RUN apt-get install -y libpcap-dev libboost-dev libboost-regex-dev libboost-program-options-dev
+RUN apt-get install -y g++
+RUN apt-get install -y libexpat-dev
+RUN apt-get install -y libncurses-dev libreadline-dev
+RUN apt-get install -y lua-json lua-socket
+RUN apt-get install -y python
+RUN apt-get install -y tcpdump
+RUN apt-get install -y libtool make
+RUN apt-get install -y build-essential devscripts apt-utils
+RUN apt-get install -y lua5.2 liblua5.2-dev
+RUN apt-get install -y dh-make
+RUN apt-get install -y libssl-dev
+RUN apt-get install -y wget
+WORKDIR /usr/local/src
+RUN wget http://luarocks.org/releases/luarocks-2.4.2.tar.gz
+RUN tar xfz luarocks-2.4.2.tar.gz
+RUN (cd luarocks-2.4.2; ./configure --with-lua-include=/usr/include)
+RUN (cd luarocks-2.4.2; make build; make install)
+RUN /usr/local/bin/luarocks --tree=/usr install uuid
+RUN /usr/local/bin/luarocks --tree=/usr install sha1
+WORKDIR /
