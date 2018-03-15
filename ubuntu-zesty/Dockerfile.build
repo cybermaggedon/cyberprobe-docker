@@ -1,6 +1,7 @@
 FROM cyberprobe-ubuntu-zesty-dev
 ARG SRC
 ARG VERSION
+COPY ubuntu-zesty/systemd.pc /usr/share/pkgconfig/systemd.pc
 ADD ${SRC} /usr/local/src/cyberprobe/
 WORKDIR /usr/local/src/cyberprobe/cyberprobe-${VERSION}
 RUN autoreconf -fi
