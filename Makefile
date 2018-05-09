@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Normally over-ridden by GoCD.
 #############################################################################
-VERSION=1.8.6
-GIT_VERSION=v1.8.6
+VERSION=1.9.14
+GIT_VERSION=v1.9.14
 
 #############################################################################
 # Global configuration
@@ -11,13 +11,13 @@ GIT_VERSION=v1.8.6
 
 # These files are part of the 'base' release, used only to extract
 # source bundle, and source RPM.
-BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
-BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc27.x86_64.rpm
+BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc28.x86_64.rpm
+BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc28.x86_64.rpm
 BASE_FILES += cyberprobe-${VERSION}.tar.gz
-BASE_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc27.src.rpm
+BASE_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc28.src.rpm
 
 # Source bundle and RPM location.
-SRC_RPM = product/base/cyberprobe-${VERSION}-1.fc27.src.rpm
+SRC_RPM = product/base/cyberprobe-${VERSION}-1.fc28.src.rpm
 SRC = product/base/cyberprobe-${VERSION}.tar.gz
 
 # Add sudo if you need to
@@ -39,12 +39,12 @@ USERID=Trust Networks <cyberprobe@trustnetworks.com>
 
 # 'all' target builds everything.
 all: product/trust-networks.asc base \
-	rpm.f24 rpm.f25 rpm.f26 rpm.f27 rpm.centos7 \
+	rpm.f26 rpm.f27 rpm.f28 rpm.centos7 \
 	deb.debian-jessie deb.debian-wheezy deb.debian-stretch \
 	deb.ubuntu-xenial deb.ubuntu-artful \
 	container container-images
 
-upload: upload.rpm.f24 upload.rpm.f25 upload.rpm.f26 upload.rpm.f27 \
+upload: upload.rpm.f26 upload.rpm.f27 upload.rpm.f28 \
 	upload.rpm.centos7 \
 	upload.deb.debian-jessie upload.deb.debian-wheezy \
 	upload.deb.debian-stretch \
@@ -80,8 +80,8 @@ product/trust-networks.asc:
 # which are used as input to all other builds.
 ###########################################################################
 
-# Base is a Fedora 27 build which produces source tar, source RPM,
-# and Fedora 27 RPMs for container builds.
+# Base is a Fedora 28 build which produces source tar, source RPM,
+# and Fedora 28 RPMs for container builds.
 
 # Base stuff is put in a base directory.
 base: PRODUCT=product/base
@@ -271,10 +271,10 @@ upload.deb.%:
 ###########################################################################
 
 # Pathname to the package to install in containers.
-PACKAGE=product/fedora/27/x86_64/cyberprobe-${VERSION}-1.fc27.x86_64.rpm
+PACKAGE=product/fedora/28/x86_64/cyberprobe-${VERSION}-1.fc28.x86_64.rpm
 
 # Creates the containers.
-container:
+container: amqp
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe \
 		--build-arg PKG=${PACKAGE} \
 		-f Dockerfile.cyberprobe.deploy .
@@ -285,6 +285,11 @@ container:
 		-f Dockerfile.cybermon.deploy .
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
+
+amqp:
+	-rm -rf amqp
+	mkdir amqp
+	(cd amqp; git clone https://github.com/cybermaggedon/amqp .)
 
 # Creates a Docker images tar file.
 container-images: images/cyberprobe.img
@@ -344,7 +349,7 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
-	for file in product/fedora/27/x86_64/*${VERSION}*.rpm; do \
+	for file in product/fedora/28/x86_64/*${VERSION}*.rpm; do \
 	name=fedora-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
@@ -379,7 +384,7 @@ upload-release: go
 	  --repo cyberprobe \
 	  --tag v${VERSION} \
 	  --name cyberprobe-${VERSION}-1.src.rpm \
-	  --file product/base/cyberprobe-${VERSION}-1.fc27.src.rpm \
+	  --file product/base/cyberprobe-${VERSION}-1.fc28.src.rpm \
 	  -s $$(cat ${TOKEN_FILE})
 	go/bin/github-release upload \
 	  --user cybermaggedon \
