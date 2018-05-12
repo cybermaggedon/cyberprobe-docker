@@ -306,10 +306,12 @@ ALWAYS:
 
 # Pushes images to the container repository.  Docker hub authentication
 # must have been set up.
+load-images:
+	${DOCKER} load -i ${IMAGE_DIR}/cyberprobe.img
+
 push: push-images
 
 push-images:
-	${DOCKER} load -i ${IMAGE_DIR}/cyberprobe.img
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} push docker.io/cybermaggedon/cyberprobe:latest
