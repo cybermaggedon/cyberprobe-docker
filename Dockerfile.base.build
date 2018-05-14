@@ -5,5 +5,4 @@ WORKDIR /usr/local/src/cyberprobe
 RUN git clone http://github.com/cybermaggedon/cyberprobe .; git checkout ${GIT_VERSION}
 RUN autoreconf -fi
 RUN ./configure --prefix=/usr/local
-RUN make check
 RUN make -f pkg.mk rpm
