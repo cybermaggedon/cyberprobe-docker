@@ -274,7 +274,7 @@ upload.deb.%:
 PACKAGE=product/fedora/28/x86_64/cyberprobe-${VERSION}-1.fc28.x86_64.rpm
 
 # Creates the containers.
-container: amqp
+container:
 	${DOCKER} build ${BUILD_ARGS} -t cyberprobe \
 		--build-arg PKG=${PACKAGE} \
 		-f Dockerfile.cyberprobe.deploy .
@@ -285,11 +285,6 @@ container: amqp
 		-f Dockerfile.cybermon.deploy .
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:${VERSION}
 	${DOCKER} tag cybermon docker.io/cybermaggedon/cybermon:latest
-
-amqp:
-	-rm -rf amqp
-	mkdir amqp
-	(cd amqp; git clone https://github.com/cybermaggedon/amqp .)
 
 # Creates a Docker images tar file.
 container-images: images/cyberprobe.img
