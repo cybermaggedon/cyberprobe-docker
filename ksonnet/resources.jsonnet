@@ -36,7 +36,7 @@ local tls(config) = {
     name: "probe-svc",
     cyberprobeVersion:: import "version.jsonnet",
 
-    images: ["cybermaggedon/cyberprobe:" + self.cyberprobeVersion],
+    images: ["cybermaggedon/cybermon:" + self.cyberprobeVersion],
 
     local name = self.name,
     
@@ -48,20 +48,19 @@ local tls(config) = {
     // Volume mount points
     volumeMounts:: [
         mount.new("probe-svc-creds", "/key") + mount.readOnly(true),
-        mount.new("cybermon-config", "/etc/cyberprobe/socket.lua") +
-            mount.subPath("socket.lua") +
-            mount.readOnly(true)
     ],
 
     // Environment variables
     local envs = [
-        env.new("SOCKET_HOST", "analytics-input")
+        env.new("AMQP_BROKER", "amqp:5672"),
+	env.new("AMQP_ROUTING_KEY", ""),
+	env.new("AMQP_EXCHANGE", "nw_event"),
     ],
 
     // Command to execute in the container.
     command:: [
         "cybermon", "--port=9001", "--transport=tls", 
-        "--config=/etc/cyberprobe/socket.lua", "--key=/key/key.probe",
+        "--config=/etc/cyberprobe/amqp-topic.lua", "--key=/key/key.probe",
         "--certificate=/key/cert.probe", "--trusted-ca=/key/cert.ca"],
 
     // Containers
@@ -85,11 +84,6 @@ local tls(config) = {
         // probe-svc-creds secret
         volume.name("probe-svc-creds") +
             secretDisk.secretName("probe-svc-creds"),
-        
-        // socket.lua mapped in using a config map.
-        volume.fromConfigMap("cybermon-config", "cybermon-config",
-                             [{key: "socket.lua", path: "socket.lua"}])
-        
     ],
 
     // Number of repliacs.
@@ -174,23 +168,15 @@ local open(config) = tls(config) {
 
     // Volume mount points
     volumeMounts:: [
-        mount.new("cybermon-config", "/etc/cyberprobe/socket.lua") +
-            mount.subPath("socket.lua") +
-            mount.readOnly(true)
     ],
 
     // Command
     command:: [
         "cybermon", "--port=9000", "--transport=tcp", 
-        "--config=/etc/cyberprobe/socket.lua"],
+        "--config=/etc/cyberprobe/amqp-topic.lua"],
 
     // Volumes
     volumes:: [
-
-        // socket.lua mapped in using a config map.
-        volume.fromConfigMap("cybermon-config", "cybermon-config",
-                             [{key: "socket.lua", path: "socket.lua"}])
-        
     ],
 
     // Number of replicas
@@ -289,22 +275,9 @@ local ca(config) = {
         else []
 };
 
-local configMaps(config) = {
-
-    name: "probe-config-maps",
-    
-    resources:
-        if config.options.includeProbeSvc ||   
-            config.options.includeOpenProbeSvc then [
-            configMap.new() + configMap.mixin.metadata.name("cybermon-config") +
-            configMap.data({"socket.lua": import "socket.lua.jsonnet"})
-        ] else []
-    
-};
-
 local worker(config) = {
 	resources: tls(config).resources + open(config).resources
-				+ ca(config).resources + configMaps(config).resources
+				+ ca(config).resources
 };
 worker
 
