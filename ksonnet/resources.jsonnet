@@ -14,14 +14,12 @@ local mount = container.volumeMountsType;
 local volume = depl.mixin.spec.template.spec.volumesType;
 local resources = container.resourcesType;
 local env = container.envType;
-local gceDisk = volume.mixin.gcePersistentDisk;
 local svc = k.core.v1.service;
 local svcPort = svc.mixin.spec.portsType;
 local svcLabels = svc.mixin.metadata.labels;
 local externalIp = svc.mixin.spec.loadBalancerIp;
 local svcType = svc.mixin.spec.type;
 local secretDisk = volume.mixin.secret;
-local configMap = k.core.v1.configMap;
 
 //
 // This plays with some of the templating features of jsonnet.  We define the
@@ -204,80 +202,8 @@ local open(config) = tls(config) {
     
 };
 
-// CA
-local ca(config) = {
-
-    name: "probe-ca",
-    images: ["gcr.io/trust-networks/probe-ca:0.03"],
-
-    local name = self.name,
-
-    // Environment
-    local envs = [
-        env.new("CA", "/ca"),
-        env.new("CA_CERT", "/cert")
-    ],
-
-    // Volume mounts
-    local volumeMounts = [
-        mount.new("probe-ca-creds", "/cert") + mount.readOnly(true),
-        mount.new("probe-ca-data", "/ca")
-    ],
-
-    // Containers
-    local containers = [
-
-        container.new(name, self.images[0]) +
-            container.env(envs) +
-            container.volumeMounts(volumeMounts) +
-            container.mixin.resources.limits({
-                memory: "32M", cpu: "1.0"
-            }) +
-            container.mixin.resources.requests({
-                memory: "32M", cpu: "0.001"
-            })
-    ],
-
-    // Volumes
-    local volumes = [
-
-        // probe-svc-creds secret
-        volume.name("probe-ca-creds") +
-            secretDisk.secretName("probe-ca-creds"),
-
-        volume.name("probe-ca-data") + gceDisk.fsType("ext4") +
-            gceDisk.pdName("probe-ca-0000")
-
-    ],
-
-    // Deployment definition.
-    deployments:: [
-            depl.new(name, 1, containers,
-                     {app: name, component: "access"}) +
-            depl.mixin.spec.template.spec.volumes(volumes)
-    ],
-
-    resources:
-        if config.options.includeProbeSvc ||   
-            config.options.includeOpenProbeSvc then
-            self.deployments
-        else [],
-
-    createCommands:
-        if config.options.includeProbeSvc ||   
-            config.options.includeOpenProbeSvc then
-            [
-                ("gcloud compute --project \"%s\" disks create \"probe-ca-0000\"" +
-                 " --size \"%s\" --zone \"%s\" --type \"%s\"") %
-                    [config.project, config.probeCaDiskSize,
-                     config.zone, config.probeCaDiskType]
-            ]
-        else []
-};
-
 local worker(config) = {
 	resources: tls(config).resources + open(config).resources
-				+ ca(config).resources
 };
 worker
 
