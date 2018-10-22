@@ -202,8 +202,5 @@ local open(config) = tls(config) {
     
 };
 
-local worker(config) = {
-	resources: tls(config).resources + open(config).resources
-};
-worker
+[tls, open]
 
