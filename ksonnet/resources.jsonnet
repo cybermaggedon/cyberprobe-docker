@@ -33,6 +33,7 @@ local tls(config) = {
     // Name used for the deployment and service.
     name: "probe-svc",
     cyberprobeVersion:: import "version.jsonnet",
+    namespace: config.namespace,
 
     images: ["cybermaggedon/cybermon:" + self.cyberprobeVersion],
 
@@ -91,7 +92,8 @@ local tls(config) = {
     deployments: [
         depl.new(name, self.replicas, containers,
                  {app: name, component: "access"}) +
-            depl.mixin.spec.template.spec.volumes(self.volumes)
+            depl.mixin.spec.template.spec.volumes(self.volumes) +
+            depl.mixin.metadata.namespace(self.namespace)
     ],
 
     // Ports used by the service.
@@ -115,7 +117,9 @@ local tls(config) = {
            svc.mixin.spec.externalTrafficPolicy("Local") +
 
            // Label
-           svcLabels({app: name, component: "access"})
+           svcLabels({app: name, component: "access"}) +
+
+           svc.mixin.metadata.namespace(self.namespace)
 
     ],
 
