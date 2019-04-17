@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Normally over-ridden by GoCD.
 #############################################################################
-VERSION=1.9.14
-GIT_VERSION=v1.9.14
+VERSION=1.11.7
+GIT_VERSION=v1.11.7
 
 #############################################################################
 # Global configuration
@@ -11,13 +11,14 @@ GIT_VERSION=v1.9.14
 
 # These files are part of the 'base' release, used only to extract
 # source bundle, and source RPM.
-BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.fc28.x86_64.rpm
-BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.fc28.x86_64.rpm
+BASE_VERSION=fc29
+BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.${BASE_VERSION}.x86_64.rpm
+BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.${BASE_VERSION}.x86_64.rpm
 BASE_FILES += cyberprobe-${VERSION}.tar.gz
-BASE_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.fc28.src.rpm
+BASE_FILES += RPM/SRPMS/cyberprobe-${VERSION}-1.${BASE_VERSION}.src.rpm
 
 # Source bundle and RPM location.
-SRC_RPM = product/base/cyberprobe-${VERSION}-1.fc28.src.rpm
+SRC_RPM = product/base/cyberprobe-${VERSION}-1.${BASE_VERSION}.src.rpm
 SRC = product/base/cyberprobe-${VERSION}.tar.gz
 
 # Add sudo if you need to
@@ -28,7 +29,8 @@ DOCKER=docker
 IMAGE_DIR=images
 
 # GPG user ID
-USERID=Trust Networks <cyberprobe@trustnetworks.com>
+USERID=Cyber MacGeddon <cybermaggedon@gmail.com>
+KEYFILE=product/cyberprobe.asc
 
 
 ############################################################################
@@ -38,22 +40,21 @@ USERID=Trust Networks <cyberprobe@trustnetworks.com>
 # Typically, call: make download-product all upload-product
 
 # 'all' target builds everything.
-all: product/trust-networks.asc base \
-	rpm.f26 rpm.f27 rpm.f28 rpm.centos7 \
-	deb.debian-jessie deb.debian-wheezy deb.debian-stretch \
-	deb.ubuntu-xenial deb.ubuntu-artful \
+all: ${KEYFILE} base \
+	rpm.f26 rpm.f27 rpm.f28 rpm.f29 rpm.centos7 \
+	deb.debian-jessie deb.debian-stretch \
+	deb.ubuntu-xenial deb.ubuntu-bionic \
 	container container-images
 
-upload: upload.rpm.f26 upload.rpm.f27 upload.rpm.f28 \
+upload: upload.rpm.f26 upload.rpm.f27 upload.rpm.f28 upload.rpm.f29 \
 	upload.rpm.centos7 \
-	upload.deb.debian-jessie upload.deb.debian-wheezy \
+	upload.deb.debian-jessie \
 	upload.deb.debian-stretch \
-	upload.deb.ubuntu-xenial upload.deb.ubuntu-zesty \
-	upload.deb.ubuntu-artful \
+	upload.deb.ubuntu-xenial upload.deb.ubuntu-bionic \
 	container container-images create-release upload-release push
 
-dag: product/trust-networks.asc base deb.ubuntu-artful-dag deb.ubuntu-zesty-dag
-dag.upload: product/trust-networks.asc base upload.deb.ubuntu-artful-dag
+dag: ${KEYFILE} base deb.ubuntu-bionic-dag
+dag.upload: ${KEYFILE} base upload.deb.ubuntu-bionic-dag
 
 set-bucket-defacl:
 	gsutil defacl ch -u AllUsers:R gs://download.trustnetworks.com
@@ -71,7 +72,7 @@ upload-product:
 		'gs://download.trustnetworks.com/'
 
 # Creates the public form of the signing key.
-product/trust-networks.asc:
+${KEYFILE}:
 	mkdir -p product
 	gpg2 --armor --export > $@
 
@@ -227,11 +228,11 @@ deb.%:
 	  echo Architectures: amd64; \
 	  echo Suite: ${DISTVSN}; \
 	  echo Codename: ${DISTVSN}; \
-	  echo Origin: Trust Networks; \
-	  echo Label: trust-networks; \
+	  echo Origin: github.com/cybermaggedon/cyberprobe; \
+	  echo Label: cyberprobe; \
 	  echo Components: main; \
 	  echo Acquire-By-Hash: no; \
-	  echo Description: Trust Networks package repository; \
+	  echo Description: Cyberprobe package repository; \
 	  md5=$$(md5sum main/binary-amd64/Packages | awk '{print $$1}'); \
 	  sha256=$$(sha256sum main/binary-amd64/Packages | awk '{print $$1}'); \
 	  sha1=$$(sha1sum main/binary-amd64/Packages | awk '{print $$1}'); \
@@ -271,7 +272,7 @@ upload.deb.%:
 ###########################################################################
 
 # Pathname to the package to install in containers.
-PACKAGE=product/fedora/28/x86_64/cyberprobe-${VERSION}-1.fc28.x86_64.rpm
+PACKAGE=product/fedora/29/x86_64/cyberprobe-${VERSION}-1.fc29.x86_64.rpm
 
 # Creates the containers.
 container:
@@ -409,31 +410,4 @@ delete-keys:
 generate-key:
 	gpg2 --yes --batch --passphrase '' \
 		--quick-generate-key '${USERID}' rsa4096 sign never
-
-
-###########################################################################
-# Continuous deployment support.  Unlikely to be much use outside of TN.
-###########################################################################
-
-# Continuous deployment support
-BRANCH=master
-PREFIX=resources/probe-svc
-FILE=${PREFIX}/ksonnet/version.jsonnet
-REPO=git@github.com:cybermaggedon/cyberprobe-docker
-
-tools: phony
-	if [ ! -d tools ]; then \
-		git clone git@github.com:trustnetworks/cd-tools tools; \
-	fi; \
-	(cd tools; git pull)
-
-phony:
-
-bump-version: tools
-	tools/bump-version
-
-update-cluster-config: tools
-	tools/update-version-config ${BRANCH} ${VERSION} ${FILE}
-	tools/update-version-config ${BRANCH} ${VERSION} \
-		resources/vpn-service/ksonnet/cyberprobe-version.jsonnet
 
