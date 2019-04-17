@@ -224,7 +224,7 @@ deb.%:
 	dpkg-scanpackages ${DIST}/${RELATIVE} > ${DIST}/${RELATIVE}/Packages
 	cd ${BASE}/${DIST}; \
 	( \
-	  echo Date: $$(date +'%a, %d %b %Y %T %Z'); \
+	  echo Date: $$(date -u +'%a, %d %b %Y %T %Z'); \
 	  echo Architectures: amd64; \
 	  echo Suite: ${DISTVSN}; \
 	  echo Codename: ${DISTVSN}; \
@@ -347,7 +347,7 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
-	for file in product/fedora/28/x86_64/*${VERSION}*.rpm; do \
+	for file in product/fedora/29/x86_64/*${VERSION}*.rpm; do \
 	name=fedora-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
@@ -367,7 +367,7 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
-	for file in product/ubuntu/dists/artful/main/binary-amd64/*${VERSION}*.deb; do \
+	for file in product/ubuntu/dists/bionic/main/binary-amd64/*${VERSION}*.deb; do \
 	name=ubuntu-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
@@ -382,7 +382,7 @@ upload-release: go
 	  --repo cyberprobe \
 	  --tag v${VERSION} \
 	  --name cyberprobe-${VERSION}-1.src.rpm \
-	  --file product/base/cyberprobe-${VERSION}-1.fc28.src.rpm \
+	  --file product/base/cyberprobe-${VERSION}-1.fc29.src.rpm \
 	  -s $$(cat ${TOKEN_FILE})
 	go/bin/github-release upload \
 	  --user cybermaggedon \
