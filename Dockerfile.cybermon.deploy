@@ -5,17 +5,23 @@ ARG PKG
 
 RUN dnf -y update && \
     dnf install -y lua-socket lua-json tar luarocks \
-    cppzmq-devel gcc lua-devel findutils net-tools python python-zmq \
-    python-requests python-httplib2 GeoIP python2-GeoIP geoipupdate && \
+    cppzmq-devel gcc lua-devel findutils net-tools python3 python3-zmq \
+    python3-requests python3-httplib2 GeoIP python3-GeoIP geoipupdate \
+    python3-pika && \
     dnf clean all
+
 RUN luarocks install lzmq && luarocks install uuid && \
     luarocks install redis-lua && luarocks install uuid && \
     luarocks install sha1 && luarocks install amqp
-RUN pip install --upgrade google-api-python-client cassandra-driver
-RUN geoipupdate || true
+
+RUN pip3 install --upgrade google-api-python-client cassandra-driver
+
+RUN geoipupdate
 
 COPY ${PKG} cyberprobe.rpm
 RUN dnf install -y cyberprobe.rpm && dnf clean all
+
+COPY cyberprobe.cfg /etc/cyberprobe.cfg
 
 CMD cybermon -p 9000 -c /etc/cyberprobe/zeromq.lua
 
