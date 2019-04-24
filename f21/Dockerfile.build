@@ -1,3 +1,0 @@
-FROM cyberprobe-f21-dev
-COPY product/cyberprobe-*.src.rpm /
-RUN rpmbuild --rebuild *.src.rpm

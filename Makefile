@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Normally over-ridden by GoCD.
 #############################################################################
-VERSION=1.12.0
-GIT_VERSION=v1.12.0
+VERSION=1.12.1
+GIT_VERSION=v1.12.1
 
 #############################################################################
 # Global configuration
@@ -41,16 +41,16 @@ KEYFILE=product/cyberprobe.asc
 
 # 'all' target builds everything.
 all: ${KEYFILE} base \
-	rpm.f26 rpm.f27 rpm.f28 rpm.f29 rpm.centos7 \
+	rpm.f27 rpm.f28 rpm.f29 \
 	deb.debian-jessie deb.debian-stretch \
-	deb.ubuntu-xenial deb.ubuntu-bionic \
+	deb.ubuntu-xenial deb.ubuntu-bionic deb.ubuntu-cosmic \
 	container container-images
 
-upload: upload.rpm.f26 upload.rpm.f27 upload.rpm.f28 upload.rpm.f29 \
-	upload.rpm.centos7 \
+upload: upload.rpm.f27 upload.rpm.f28 upload.rpm.f29 \
 	upload.deb.debian-jessie \
 	upload.deb.debian-stretch \
 	upload.deb.ubuntu-xenial upload.deb.ubuntu-bionic \
+	upload.deb.ubuntu-cosmic \
 	container container-images create-release upload-release push
 
 dag: ${KEYFILE} base deb.ubuntu-bionic-dag
@@ -337,16 +337,6 @@ create-release: go
 
 # Uploads 
 upload-release: go
-	for file in product/centos/7/x86_64/*${VERSION}*.rpm; do \
-	name=centos-$$(basename $$file); \
-	go/bin/github-release upload \
-	  --user cybermaggedon \
-	  --repo cyberprobe \
-	  --tag v${VERSION} \
-	  --name $$name \
-	  --file $$file \
-	  -s $$(cat ${TOKEN_FILE}); \
-	done
 	for file in product/fedora/29/x86_64/*${VERSION}*.rpm; do \
 	name=fedora-$$(basename $$file); \
 	go/bin/github-release upload \
