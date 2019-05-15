@@ -1,4 +1,4 @@
-FROM fedora:29
+FROM fedora:30
 RUN dnf install -y git autoconf automake
 RUN dnf install -y texinfo-tex
 RUN dnf install -y libpcap-devel boost-devel gcc-c++

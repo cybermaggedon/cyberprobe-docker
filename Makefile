@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Normally over-ridden by GoCD.
 #############################################################################
-VERSION=1.12.2
-GIT_VERSION=v1.12.2
+VERSION=1.13.3
+GIT_VERSION=v1.13.3
 
 #############################################################################
 # Global configuration
@@ -11,7 +11,7 @@ GIT_VERSION=v1.12.2
 
 # These files are part of the 'base' release, used only to extract
 # source bundle, and source RPM.
-BASE_VERSION=fc29
+BASE_VERSION=fc30
 BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.${BASE_VERSION}.x86_64.rpm
 BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.${BASE_VERSION}.x86_64.rpm
 BASE_FILES += cyberprobe-${VERSION}.tar.gz
@@ -41,12 +41,12 @@ KEYFILE=product/cyberprobe.asc
 
 # 'all' target builds everything.
 all: ${KEYFILE} base \
-	rpm.f27 rpm.f28 rpm.f29 \
+	rpm.f28 rpm.f29 rpm.f30 \
 	deb.debian-jessie deb.debian-stretch \
 	deb.ubuntu-xenial deb.ubuntu-bionic deb.ubuntu-cosmic \
 	container container-images
 
-upload: upload.rpm.f27 upload.rpm.f28 upload.rpm.f29 \
+upload: upload.rpm.f28 upload.rpm.f29 upload.rpm.f30 \
 	upload.deb.debian-jessie \
 	upload.deb.debian-stretch \
 	upload.deb.ubuntu-xenial upload.deb.ubuntu-bionic \
@@ -272,7 +272,7 @@ upload.deb.%:
 ###########################################################################
 
 # Pathname to the package to install in containers.
-PACKAGE=product/fedora/29/x86_64/cyberprobe-${VERSION}-1.fc29.x86_64.rpm
+PACKAGE=product/fedora/30/x86_64/cyberprobe-${VERSION}-1.fc30.x86_64.rpm
 
 # Creates the containers.
 container:
@@ -337,7 +337,7 @@ create-release: go
 
 # Uploads 
 upload-release: go
-	for file in product/fedora/29/x86_64/*${VERSION}*.rpm; do \
+	for file in product/fedora/30/x86_64/*${VERSION}*.rpm; do \
 	name=fedora-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
@@ -372,7 +372,7 @@ upload-release: go
 	  --repo cyberprobe \
 	  --tag v${VERSION} \
 	  --name cyberprobe-${VERSION}-1.src.rpm \
-	  --file product/base/cyberprobe-${VERSION}-1.fc29.src.rpm \
+	  --file product/base/cyberprobe-${VERSION}-1.fc30.src.rpm \
 	  -s $$(cat ${TOKEN_FILE})
 	go/bin/github-release upload \
 	  --user cybermaggedon \
