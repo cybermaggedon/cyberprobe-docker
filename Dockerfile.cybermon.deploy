@@ -16,6 +16,10 @@ RUN luarocks install lzmq && luarocks install uuid && \
 
 RUN pip3 install --upgrade google-api-python-client cassandra-driver
 
+RUN (echo AccountID 0; echo LicenseKey 000000000000; \
+     echo EditionIDs GeoLite2-Country GeoLite2-City GeoLite2-ASN) \
+     > /etc/GeoIP.conf
+
 RUN geoipupdate
 
 COPY ${PKG} cyberprobe.rpm
