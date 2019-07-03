@@ -27,7 +27,7 @@ RUN dnf install -y cyberprobe.rpm && dnf clean all
 
 COPY cyberprobe.cfg /etc/cyberprobe.cfg
 
-CMD cybermon -p 9000 -c /etc/cyberprobe/zeromq.lua
+CMD cybermon -p 9000 -c /etc/cyberprobe/amqp-topic.lua
 
 # cybermon receiver port.
 EXPOSE 9000
