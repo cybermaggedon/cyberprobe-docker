@@ -5,7 +5,6 @@ RUN dnf install -y libpcap-devel boost-devel gcc-c++
 RUN dnf install -y expat-devel lua-devel 
 RUN dnf install -y ncurses-devel readline-devel 
 RUN dnf install -y texinfo texlive
-RUN dnf install -y luarocks
 RUN dnf install -y python
 RUN dnf install -y tcpdump tar
 RUN dnf install -y libtool make
