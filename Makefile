@@ -1,9 +1,9 @@
 
 #############################################################################
-# Input version numbers.  Normally over-ridden by GoCD.
+# Input version numbers.  Can be over-riden by CI.
 #############################################################################
-VERSION=1.13.3
-GIT_VERSION=v1.13.3
+VERSION=2.0.0
+GIT_VERSION=v2.0.0
 
 #############################################################################
 # Global configuration
@@ -41,10 +41,14 @@ KEYFILE=product/cyberprobe.asc
 
 # 'all' target builds everything.
 all: ${KEYFILE} base \
-	rpm.f28 rpm.f29 rpm.f30 \
-	deb.debian-jessie deb.debian-stretch \
-	deb.ubuntu-xenial deb.ubuntu-bionic deb.ubuntu-cosmic \
+	fedora debian ubuntu \
 	container container-images
+
+fedora: rpm.f28 rpm.f29 rpm.f30
+
+debian: deb.debian-jessie deb.debian-stretch
+
+ubuntu: deb.ubuntu-xenial deb.ubuntu-bionic deb.ubuntu-cosmic
 
 upload: upload.rpm.f28 upload.rpm.f29 upload.rpm.f30 \
 	upload.deb.debian-jessie \
