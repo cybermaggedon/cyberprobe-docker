@@ -7,6 +7,7 @@ RUN apt-get install -y libpcap-dev libboost-program-options-dev
 RUN apt-get install -y g++
 RUN apt-get install -y libexpat-dev
 RUN apt-get install -y ncurses-dev libreadline-dev
+RUN apt-get install -y lua-json lua-socket
 RUN apt-get install -y python
 RUN apt-get install -y tcpdump
 RUN apt-get install -y libtool make
