@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Can be over-riden by CI.
 #############################################################################
-VERSION=2.0.4
-GIT_VERSION=v2.0.4
+VERSION=2.0.5
+GIT_VERSION=v2.0.5
 
 #############################################################################
 # Global configuration
@@ -41,10 +41,12 @@ KEYFILE=product/cyberprobe.asc
 
 # 'all' target builds everything.
 all: ${KEYFILE} base \
-	fedora debian ubuntu \
+	fedora debian ubuntu amazon \
 	container container-images
 
 fedora: rpm.f28 rpm.f29 rpm.f30
+
+amazon: rpm.amazon-2
 
 debian: deb.debian-jessie deb.debian-stretch
 
@@ -125,6 +127,7 @@ ARCH=x86_64
 rpm.%: OS=$(@:rpm.%=%)
 rpm.f%: PRODUCT=product/fedora/$(@:rpm.f%=%)/${ARCH}
 rpm.centos%: PRODUCT=product/centos/$(@:rpm.centos%=%)/${ARCH}
+rpm.amazon-%: PRODUCT=product/amazon/$(@:rpm.amazon-%=%)/${ARCH}
 
 # We use the 'build' model.  Two containers are created: a dev container
 # is created with the right build tools in it.  If everything goes wrong,

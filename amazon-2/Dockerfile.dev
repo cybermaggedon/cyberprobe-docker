@@ -1,0 +1,22 @@
+FROM amazonlinux:2
+RUN yum install -y git autoconf automake
+RUN yum install -y texinfo texlive
+RUN yum install -y libpcap-devel boost-devel gcc-c++
+RUN yum install -y expat-devel lua-devel 
+RUN yum install -y ncurses-devel readline-devel
+RUN yum install -y tcpdump tar
+RUN yum install -y libtool make
+RUN yum install -y texinfo-tex
+RUN yum install -y rpm-build
+RUN yum install -y openssl-devel
+RUN yum install -y python3
+RUN yum install -y wget
+WORKDIR /usr/local/src
+RUN wget https://luarocks.github.io/luarocks/releases/luarocks-3.1.3.tar.gz
+RUN tar xfz luarocks-3.1.3.tar.gz
+RUN (cd luarocks-3.1.3; ./configure --with-lua-include=/usr/include)
+RUN (cd luarocks-3.1.3; make build; make install)
+RUN luarocks --tree=/usr install luajson
+RUN luarocks --tree=/usr install luasocket
+RUN mv /usr/lib/lua/5.1/* /usr/lib64/lua/5.1/
+WORKDIR /
