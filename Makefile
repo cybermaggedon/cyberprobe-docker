@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Can be over-riden by CI.
 #############################################################################
-VERSION=2.0.5
-GIT_VERSION=v2.0.5
+VERSION=2.0.6
+GIT_VERSION=v2.0.6
 
 #############################################################################
 # Global configuration
@@ -344,6 +344,16 @@ create-release: go
 
 # Uploads 
 upload-release: go
+	for file in product/amazon/2/x86_64/*${VERSION}*.rpm; do \
+	name=amazon-$$(basename $$file); \
+	go/bin/github-release upload \
+	  --user cybermaggedon \
+	  --repo cyberprobe \
+	  --tag v${VERSION} \
+	  --name $$name \
+	  --file $$file \
+	  -s $$(cat ${TOKEN_FILE}); \
+	done
 	for file in product/fedora/30/x86_64/*${VERSION}*.rpm; do \
 	name=fedora-$$(basename $$file); \
 	go/bin/github-release upload \
