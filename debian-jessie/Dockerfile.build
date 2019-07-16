@@ -7,4 +7,4 @@ RUN sed -i 's/libreadline7/libreadline6/' debian/control
 RUN sed -i 's/libboost-program-options1.62.0/libboost-program-options1.55.0/' debian/control
 RUN autoreconf -fi
 RUN ./configure --prefix=/usr/local
-RUN DEB_CXXFLAGS_APPEND=-std=c++11 make -f pkg.mk deb
+RUN DEB_CXXFLAGS_APPEND="-std=c++11 -DTLS_method=TLSv1_2_method" make -f pkg.mk deb
