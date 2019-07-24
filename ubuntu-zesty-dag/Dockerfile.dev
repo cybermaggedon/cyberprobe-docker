@@ -6,7 +6,6 @@ RUN apt-get install -y git
 RUN apt-get install -y autoconf automake
 RUN apt-get install -y libpcap-dev libboost-dev libboost-regex-dev libboost-program-options-dev
 RUN apt-get install -y g++
-RUN apt-get install -y libexpat-dev
 RUN apt-get install -y libncurses-dev libreadline-dev
 RUN apt-get install -y lua-filesystem lua-json lua-md5 lua-socket
 RUN apt-get install -y texinfo texlive

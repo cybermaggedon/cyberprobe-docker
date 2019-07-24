@@ -2,7 +2,7 @@ FROM fedora:30
 RUN dnf install -y git autoconf automake
 RUN dnf install -y texinfo-tex
 RUN dnf install -y libpcap-devel boost-devel gcc-c++
-RUN dnf install -y expat-devel lua-devel 
+RUN dnf install -y lua-devel 
 RUN dnf install -y ncurses-devel readline-devel 
 RUN dnf install -y lua-json lua-socket
 RUN dnf install -y texinfo texlive

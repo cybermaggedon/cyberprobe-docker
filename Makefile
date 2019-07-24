@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Can be over-riden by CI.
 #############################################################################
-VERSION=2.1.0
-GIT_VERSION=v2.1.0
+VERSION=2.3.0
+GIT_VERSION=v2.3.0
 
 #############################################################################
 # Global configuration
@@ -44,7 +44,7 @@ all: ${KEYFILE} base \
 	fedora debian ubuntu amazon \
 	container container-images
 
-fedora: rpm.f28 rpm.f29 rpm.f30
+fedora: rpm.f29 rpm.f30
 
 amazon: rpm.amazon-2
 
@@ -52,7 +52,7 @@ debian: deb.debian-jessie deb.debian-stretch
 
 ubuntu: deb.ubuntu-xenial deb.ubuntu-bionic deb.ubuntu-cosmic
 
-upload: upload.rpm.f28 upload.rpm.f29 upload.rpm.f30 \
+upload: upload.rpm.f29 upload.rpm.f30 \
 	upload.deb.debian-jessie \
 	upload.deb.debian-stretch \
 	upload.deb.ubuntu-xenial upload.deb.ubuntu-bionic \

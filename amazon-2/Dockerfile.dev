@@ -2,7 +2,7 @@ FROM amazonlinux:2
 RUN yum install -y git autoconf automake
 RUN yum install -y texinfo texlive
 RUN yum install -y libpcap-devel boost-devel gcc-c++
-RUN yum install -y expat-devel lua-devel 
+RUN yum install -y lua-devel 
 RUN yum install -y ncurses-devel readline-devel
 RUN yum install -y tcpdump tar
 RUN yum install -y libtool make
