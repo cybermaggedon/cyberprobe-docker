@@ -14,6 +14,7 @@ RUN apt-get install -y build-essential devscripts apt-utils
 RUN apt-get install -y lua5.2 liblua5.2-dev
 RUN apt-get install -y libssl-dev
 RUN apt-get install -y wget
+RUN apt-get install -y protobuf-c-compiler libprotobuf9 libprotobuf-c-dev libprotobuf-dev
 WORKDIR /usr/local/src
 RUN wget http://luarocks.org/releases/luarocks-3.0.4.tar.gz
 RUN tar xfz luarocks-3.0.4.tar.gz

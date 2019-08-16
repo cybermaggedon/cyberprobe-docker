@@ -11,3 +11,6 @@ RUN dnf install -y tcpdump tar
 RUN dnf install -y libtool make
 RUN dnf install -y rpm-build
 RUN dnf install -y openssl-devel
+RUN dnf install -y protobuf-compiler protobuf protobuf-c protobuf-devel
+RUN dnf install -y grpc grpc-devel grpc-plugins
+RUN dnf install -y which

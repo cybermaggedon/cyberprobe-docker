@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Can be over-riden by CI.
 #############################################################################
-VERSION=2.3.0
-GIT_VERSION=v2.3.0
+VERSION=2.3.6
+GIT_VERSION=v2.3.6
 
 #############################################################################
 # Global configuration
@@ -48,15 +48,16 @@ fedora: rpm.f29 rpm.f30
 
 amazon: rpm.amazon-2
 
-debian: deb.debian-jessie deb.debian-stretch
+debian: deb.debian-stretch
 
-ubuntu: deb.ubuntu-xenial deb.ubuntu-bionic deb.ubuntu-cosmic
+ubuntu: deb.ubuntu-bionic deb.ubuntu-disco
 
-upload: upload.rpm.f29 upload.rpm.f30 \
-	upload.deb.debian-jessie \
+upload: upload.rpm.f29 \
+	upload.rpm.f30 \
+	upload.rpm.amazon-2 \
 	upload.deb.debian-stretch \
-	upload.deb.ubuntu-xenial upload.deb.ubuntu-bionic \
-	upload.deb.ubuntu-cosmic \
+	upload.deb.ubuntu-bionic \
+	upload.deb.ubuntu-disco \
 	container container-images create-release upload-release push
 
 dag: ${KEYFILE} base deb.ubuntu-bionic-dag
@@ -364,7 +365,7 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
-	for file in product/debian/dists/jessie/main/binary-amd64/*${VERSION}*.deb; do \
+	for file in product/debian/dists/stretch/main/binary-amd64/*${VERSION}*.deb; do \
 	name=debian-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
@@ -374,7 +375,7 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
-	for file in product/ubuntu/dists/bionic/main/binary-amd64/*${VERSION}*.deb; do \
+	for file in product/ubuntu/dists/disco/main/binary-amd64/*${VERSION}*.deb; do \
 	name=ubuntu-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \

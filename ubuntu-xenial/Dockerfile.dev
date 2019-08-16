@@ -14,4 +14,5 @@ RUN apt-get install -y build-essential devscripts apt-utils
 RUN apt-get install -y lua5.2 liblua5.2-dev
 RUN apt-get install -y libssl-dev
 RUN apt-get install -y dh-make
+RUN apt-get install -y protobuf-compiler libprotobuf9v5 libprotobuf-dev
 WORKDIR /

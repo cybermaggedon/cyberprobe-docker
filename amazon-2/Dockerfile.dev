@@ -11,6 +11,8 @@ RUN yum install -y rpm-build
 RUN yum install -y openssl-devel
 RUN yum install -y python3
 RUN yum install -y wget
+RUN yum install -y protobuf-compiler protobuf protobuf-c protobuf-devel
+RUN yum install -y which
 WORKDIR /usr/local/src
 RUN wget https://luarocks.github.io/luarocks/releases/luarocks-3.1.3.tar.gz
 RUN tar xfz luarocks-3.1.3.tar.gz
