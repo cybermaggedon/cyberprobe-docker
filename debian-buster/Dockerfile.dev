@@ -1,0 +1,18 @@
+FROM debian:buster
+RUN apt update
+RUN apt-get install -y git
+RUN apt-get install -y texinfo texlive
+RUN apt-get install -y autoconf automake
+RUN apt-get install -y libpcap-dev libboost-program-options-dev
+RUN apt-get install -y g++
+RUN apt-get install -y ncurses-dev libreadline-dev
+RUN apt-get install -y lua-json lua-socket
+RUN apt-get install -y python
+RUN apt-get install -y tcpdump
+RUN apt-get install -y libtool make
+RUN apt-get install -y build-essential devscripts apt-utils
+RUN apt-get install -y lua5.2 liblua5.2-dev
+RUN apt-get install -y libssl-dev
+RUN apt-get install -y protobuf-compiler libprotobuf17 libprotobuf-dev
+RUN apt-get install -y libgrpc++-dev libgrpc++1 protobuf-compiler-grpc
+WORKDIR /

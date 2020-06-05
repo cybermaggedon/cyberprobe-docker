@@ -1,0 +1,10 @@
+FROM cyberprobe-ubuntu-focal-dev
+ARG SRC
+ARG VERSION
+ADD ${SRC} /usr/local/src/cyberprobe/
+WORKDIR /usr/local/src/cyberprobe/cyberprobe-${VERSION}
+RUN sed -i 's/libboost-program-options1.62.0/libboost-program-options1.71.0/' debian/control
+RUN sed -i 's/libreadline7/libreadline8/' debian/control
+RUN autoreconf -fi
+RUN ./configure --prefix=/usr/local
+RUN make -f pkg.mk deb

@@ -2,8 +2,8 @@
 #############################################################################
 # Input version numbers.  Can be over-riden by CI.
 #############################################################################
-VERSION=2.4.2
-GIT_VERSION=v2.4.2
+VERSION=2.5.0
+GIT_VERSION=v2.5.0
 
 #############################################################################
 # Global configuration
@@ -11,7 +11,7 @@ GIT_VERSION=v2.4.2
 
 # These files are part of the 'base' release, used only to extract
 # source bundle, and source RPM.
-BASE_VERSION=fc30
+BASE_VERSION=fc32
 BASE_FILES =  RPM/RPMS/x86_64/cyberprobe-${VERSION}-1.${BASE_VERSION}.x86_64.rpm
 BASE_FILES += RPM/RPMS/x86_64/cyberprobe-debuginfo-${VERSION}-1.${BASE_VERSION}.x86_64.rpm
 BASE_FILES += cyberprobe-${VERSION}.tar.gz
@@ -44,20 +44,21 @@ all: ${KEYFILE} base \
 	fedora debian ubuntu amazon \
 	container container-images
 
-fedora: rpm.f29 rpm.f30
+fedora: rpm.f31 rpm.f32
 
 amazon: rpm.amazon-2
 
-debian: deb.debian-stretch
+debian: deb.debian-stretch deb.debian-buster
 
-ubuntu: deb.ubuntu-bionic deb.ubuntu-disco
+ubuntu: deb.ubuntu-bionic deb.ubuntu-focal
 
-upload: upload.rpm.f29 \
-	upload.rpm.f30 \
+upload: upload.rpm.f31 \
+	upload.rpm.f32 \
 	upload.rpm.amazon-2 \
 	upload.deb.debian-stretch \
+	upload.deb.debian-buster \
 	upload.deb.ubuntu-bionic \
-	upload.deb.ubuntu-disco \
+	upload.deb.ubuntu-focal \
 	container container-images create-release upload-release push
 
 dag: ${KEYFILE} base deb.ubuntu-bionic-dag
@@ -280,7 +281,7 @@ upload.deb.%:
 ###########################################################################
 
 # Pathname to the package to install in containers.
-PACKAGE=product/fedora/30/x86_64/cyberprobe-${VERSION}-1.fc30.x86_64.rpm
+PACKAGE=product/fedora/32/x86_64/cyberprobe-${VERSION}-1.fc32.x86_64.rpm
 
 # Creates the containers.
 container:
@@ -365,7 +366,7 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
-	for file in product/debian/dists/stretch/main/binary-amd64/*${VERSION}*.deb; do \
+	for file in product/debian/dists/buster/main/binary-amd64/*${VERSION}*.deb; do \
 	name=debian-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
@@ -375,7 +376,7 @@ upload-release: go
 	  --file $$file \
 	  -s $$(cat ${TOKEN_FILE}); \
 	done
-	for file in product/ubuntu/dists/disco/main/binary-amd64/*${VERSION}*.deb; do \
+	for file in product/ubuntu/dists/focal/main/binary-amd64/*${VERSION}*.deb; do \
 	name=ubuntu-$$(basename $$file); \
 	go/bin/github-release upload \
 	  --user cybermaggedon \
@@ -390,7 +391,7 @@ upload-release: go
 	  --repo cyberprobe \
 	  --tag v${VERSION} \
 	  --name cyberprobe-${VERSION}-1.src.rpm \
-	  --file product/base/cyberprobe-${VERSION}-1.fc30.src.rpm \
+	  --file product/base/cyberprobe-${VERSION}-1.fc32.src.rpm \
 	  -s $$(cat ${TOKEN_FILE})
 	go/bin/github-release upload \
 	  --user cybermaggedon \

@@ -1,10 +1,10 @@
 
-FROM fedora:30
+FROM fedora:32
 
 ARG PKG
 
 RUN dnf -y update && \
-    dnf install -y lua-socket lua-json tar luarocks \
+    dnf install -y lua-socket lua-json lua-http tar luarocks \
     cppzmq-devel gcc lua-devel findutils net-tools python3 python3-zmq \
     python3-requests python3-httplib2 GeoIP python3-geoip2 geoipupdate \
     python3-pika && \
@@ -14,13 +14,14 @@ RUN luarocks install lzmq && luarocks install uuid && \
     luarocks install redis-lua && luarocks install uuid && \
     luarocks install sha1 && luarocks install amqp
 
-RUN pip3 install --upgrade google-api-python-client cassandra-driver
+RUN pip3 install --upgrade cassandra-driver pulsar-client
 
 RUN (echo AccountID 0; echo LicenseKey 000000000000; \
      echo EditionIDs GeoLite2-Country GeoLite2-City GeoLite2-ASN) \
      > /etc/GeoIP.conf
 
-RUN geoipupdate
+# Need a licence key for this to work.
+# RUN geoipupdate
 
 COPY ${PKG} cyberprobe.rpm
 RUN dnf install -y cyberprobe.rpm && dnf clean all
